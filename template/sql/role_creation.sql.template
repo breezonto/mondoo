@@ -1,0 +1,9 @@
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_roles WHERE rolname = '{user_name}'
+    ) THEN
+        CREATE USER {user_name} PASSWORD '{user_pwsd}';
+    END IF;
+END
+$$;

@@ -1,0 +1,76 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  default:
+    format: "[%(asctime)s] [DEFAULT] [%(levelname)s] [%(name)s] %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+  uvicorn_fmt:
+    format: "[%(asctime)s] [UVICORN] [%(levelname)s] [%(name)s] %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+  mdo_fmt:
+    format: "[%(asctime)s] [JINGKAI] [%(levelname)s] [%(name)s] %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+#  mcp_fmt:
+#    format: "[%(asctime)s] [%(process)d] [MCP] [%(levelname)s] [%(name)s] %(message)s"
+#    datefmt: "%Y-%m-%d %H:%M:%S"
+
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: default
+    stream: ext://sys.stderr
+
+  uvi_console:
+    class: logging.StreamHandler
+    formatter: uvicorn_fmt
+    stream: ext://sys.stderr
+
+  mdo_console:
+    class: logging.StreamHandler
+    formatter: mdo_fmt
+    stream: ext://sys.stderr
+
+#  mcp_console:
+#    class: logging.StreamHandler
+#    formatter: mcp_fmt
+#    stream: ext://sys.stderr
+
+#   mcp_file:
+#    class: logging.handlers.TimedRotatingFileHandler
+#    formatter: mcp_fmt
+#    filename: logs/mcp.log
+#    when: midnight
+#    interval: 1
+#    backupCount: 30
+#    encoding: utf-8
+
+loggers:
+  uvicorn:
+    level: INFO
+    handlers: [uvi_console]
+    propagate: no
+
+  service:
+    level: INFO
+    handlers: [mdo_console]
+    propagate: no
+
+  mdo:
+    level: INFO
+    handlers: [mdo_console]
+    propagate: no
+
+#  mdo.engine.mcp:
+#    level: INFO
+#    handlers: [mcp_file]
+#    propagate: no
+
+
+root:
+  level: INFO
+  handlers: [console]

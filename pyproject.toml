@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mondoo-ai"
+version = "0.1.0"
+description = "mondoo-ai packages"
+requires-python = ">=3.10"
+dependencies = [
+    "asyncpg",
+    "aiopg",
+    "psycopg2-binary",
+    "configparser",
+    "databases[sqlite]",
+    "fastapi[standard]",
+    "fastmcp",
+    "mcp",
+    "pandas",
+    "pdfplumber",
+    "pymupdf",
+    "python-docx",
+    "python-multipart",
+    "redis",
+    "aiofiles",
+    "pyyaml",
+    "httpx[socks]",
+    "requests"
+]
+
+[dependency-groups]
+std = []
+
+sw = [
+    "rdflib",
+    "networkx",
+    "owlrl",
+]
+
+gpu = [
+    "torch==2.11.0+cu130",
+    "sentence-transformers==5.4.1",
+    "transformers==5.5.4",
+    "haystack-ai"
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu130"
+url = "https://download.pytorch.org/whl/cu130"
+
+# [[tool.uv.index]]
+# name = "paddle-cu130"
+# url = "https://www.paddlepaddle.org.cn/packages/stable/cu130/"
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu130" }
+# paddlepaddle-gpu = { index = "paddle-cu130" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+estar = "mondoo.estar:main"

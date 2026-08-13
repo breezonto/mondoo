@@ -1,0 +1,36 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  default:
+    format: "[%(asctime)s] [DEFAULT] [%(levelname)s] [%(name)s] %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+  
+  mcp_fmt:
+    format: "[%(asctime)s] [%(process)d] [MCP] [%(levelname)s] [%(name)s] %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: default
+    stream: ext://sys.stderr
+  
+  mcp_file:
+    class: logging.handlers.TimedRotatingFileHandler
+    formatter: mcp_fmt
+    filename: logs/mcp.log
+    when: midnight
+    interval: 1
+    backupCount: 30
+    encoding: utf-8
+
+loggers:
+  mdo.engine.mcp:
+    level: INFO
+    handlers: [mcp_file]
+    propagate: no
+
+root:
+  level: INFO
+  handlers: [console]

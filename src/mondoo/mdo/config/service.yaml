@@ -1,0 +1,48 @@
+apps:
+  chat:
+    script: service/chat.py
+    host: 127.0.0.1
+    port: 10660
+    proxy_url: 
+      - /nginx/chat/
+    # log_dir: ./logs/chat
+    workers: 1
+    storage: default
+    allowed_incoming_ips:
+      - 127.0.0.1
+
+  vkbase:
+    script: service/vkbase.py
+    host: 127.0.0.1
+    port: 10760
+    proxy_url: 
+      - /nginx/kbase/
+    # log_dir: ./logs/vkbase
+    workers: 1
+    allowed_incoming_ips:
+      - 127.0.0.1
+
+  ocr:
+    script: service/ocr.py
+    host: 127.0.0.1
+    port: 10960
+    proxy_url: 
+      - /nginx/ocr/
+    # log_dir: ./logs/ocr
+    workers: 1
+    allowed_incoming_ips:
+      - 127.0.0.1
+
+  file:
+    script: service/file.py
+    host: 127.0.0.1
+    port: 10866
+    proxy_url: 
+      - /nginx/file
+    # log_dir: ./logs/file
+    workers: 1
+    storage: default
+    allowed_incoming_ips:
+      - 127.0.0.1
+
+log_base_dir: ./logs

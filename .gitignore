@@ -1,0 +1,8 @@
+.vscode/
+mondoo_ai*
+
+logs/
+
+*__pycache__*
+
+uv.lock

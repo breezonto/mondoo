@@ -1,0 +1,174 @@
+from mondoo.mdo.engine.configurator            import get_global_config_value
+from mondoo.mdo.engine.handler                 import run_gateway
+from mondoo.mdo.engine.manager.message_history import MessageHistoryManger
+
+from mondoo.mdo.engine.generator import (
+    response_in_message_with_tool,
+    stream_response_in_messages_with_tool
+)
+
+from mondoo.service.rr.chat import (
+    Role, Message, Usage, Choice,
+    ReqChatCompletion,
+    RespChatCompletionInBurst
+)
+
+from contextlib        import asynccontextmanager
+from fastapi           import FastAPI, HTTPException, Request
+from fastapi.responses import StreamingResponse
+from pathlib           import Path
+
+import time
+import json
+import asyncio
+import logging
+import os
+
+
+logger = logging.getLogger(__name__)
+
+
+path = Path('mdo/literate/role/default.md')
+if path.exists():
+    with open(path, "r", encoding="utf-8") as f:
+        SYSTEM_PROMPT_DEFAULT = f.read()
+else:
+    SYSTEM_PROMPT_DEFAULT = "你是个有帮助的助手. 接下来请让我们说中文吧！"
+
+
+SERVER_URL = set(os.getenv('PROXY_URL', '127.0.0.1').split(','))
+logger.info(f"Proxy URLs: {SERVER_URL}")
+
+
+ALLOWED_IPS = set(os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1').split(','))
+logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    tasks = [
+        asyncio.create_task(run_gateway())
+    ]
+
+    try:
+        yield
+    finally:
+        for task in tasks:
+            task.cancel()
+
+        await asyncio.gather(*tasks, return_exceptions=True)
+        print("All workers stopped")
+
+
+app = FastAPI(
+    title       = 'chat',
+    servers     = [
+        {
+            'url': SERVER_URL, 
+            'description': "Nginx reverse proxy path"
+        }
+    ],
+    lifespan    = lifespan,
+    docs_url    = '/docs',
+    redoc_url   = '/redoc',
+    openapi_url = '/openapi.json'
+)
+
+
+async def json_streamer(generator):
+    async for json_object in generator:
+        yield json.dumps(json_object, ensure_ascii = False) + '\n'
+
+
+@app.middleware('http')
+async def ip_filter_middleware(request: Request, call_next):
+    # This is the remote IP as seen by FastAPI
+    remote_ip = request.client.host
+    if remote_ip not in ALLOWED_IPS:
+        # Block the request
+        raise HTTPException(status_code=403, detail=f"Forbidden: {remote_ip} not allowed")
+    
+    # Continue processing
+    response = await call_next(request)
+    return response
+
+
+@app.post('/api/v1/chat/completions')
+async def chat_completion(req: ReqChatCompletion):
+    opts       = req.options.model_dump()
+    stream_gen = None
+    resp       = None
+    elapsed    = 0.0
+    
+    messages = req.messages
+    if messages[0].role != Role.SYSTEM:
+        message = Message(
+            role    = Role.SYSTEM,
+            content = SYSTEM_PROMPT_DEFAULT 
+        )
+        messages.insert(0, message)
+        logger.info("\"\nSystem Prompt Not Set. Using Default System Prompt:\n %s\n\"", SYSTEM_PROMPT_DEFAULT)
+    else:
+        logger.info("\"\nFrontend Set System Prompt:\n %s\n\"", messages[0].content)
+
+    message_dicts = []
+    
+    for message in messages:
+        message_dicts.append(message.model_dump())
+
+    if req.options.stream:
+        stream_gen = stream_response_in_messages_with_tool(message_dicts, opts, req.model_type)
+        return StreamingResponse(json_streamer(stream_gen), media_type='text/json')
+
+    start     = time.perf_counter()
+    resp      = await response_in_message_with_tool(message_dicts, opts, req.model_type)
+    end       = time.perf_counter()
+    elapsed   = end - start
+
+    text = ""
+    if 'choices' in resp and len(resp['choices']) > 0:
+        choice = resp['choices'][0]
+        if 'message' in choice and 'content' in choice['message']:
+            text = choice['message']['content']
+        elif 'text' in choice:
+            text = choice['text']            
+
+    prompt_tokens          = resp.get('usage', {}).get('prompt_tokens', 0)
+    completion_tokens      = resp.get('usage', {}).get('completion_tokens', 0)
+    total_tokens           = resp.get('usage', {}).get('total_tokens', 0)
+    token_generation_speed = -1
+    
+    if req.model_type == 'local':
+        token_generation_speed = resp.get('timings', {}).get('predicted_per_second', None)
+    elif req.model_type == 'remote':
+        token_generation_speed = total_tokens / elapsed if elapsed > 0 else None
+    
+    usage = Usage(
+        prompt_tokens          = prompt_tokens,
+        completion_tokens      = completion_tokens,
+        total_tokens           = total_tokens,
+        token_generation_speed = token_generation_speed
+    )
+    
+    choice = Choice(
+        index         = 0,
+        message       = Message(role = Role.ASSISTANT, content = text),
+        finish_reason = 'stop'
+    )
+
+    response = RespChatCompletionInBurst(
+        id                 = f'chatcmpl-{int(time.time()*1000)}',
+        object             = 'chat.completion',
+        created            = int(time.time()),
+        model_type         = req.model_type,
+        choices            = [choice],
+        usage              = usage,
+        system_fingerprint = None
+    )
+
+    return response
+
+
+@app.get('/api/v1/chat/{history_id}')
+def get_message_history(history_id : str):
+    return MessageHistoryManger.query_messages(history_id)

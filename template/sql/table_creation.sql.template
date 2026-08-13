@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS file_records (
+    file_id        VARCHAR(255) PRIMARY KEY,
+    source_path    TEXT,
+    target_path    TEXT,
+    stem           TEXT,
+    ext            VARCHAR(20),
+    size           BIGINT,
+    stage          VARCHAR(50),
+    curr_slice     INTEGER,
+    total_slices   INTEGER,
+    total_chunks   INTEGER,
+    upload_time    TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    chunks         JSONB,
+    summary        TEXT
+);
