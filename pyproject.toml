@@ -29,7 +29,9 @@ dependencies = [
 ]
 
 [dependency-groups]
-std = []
+std = [
+    "haystack-ai"
+]
 
 sw = [
     "rdflib",
@@ -40,8 +42,7 @@ sw = [
 gpu = [
     "torch==2.11.0+cu130",
     "sentence-transformers==5.4.1",
-    "transformers==5.5.4",
-    "haystack-ai"
+    "transformers==5.5.4"
 ]
 
 [[tool.uv.index]]
