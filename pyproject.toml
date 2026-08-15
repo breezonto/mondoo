@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mondoo-ai"
-version = "0.1.0"
+version = "0.1"
 description = "mondoo-ai packages"
 requires-python = ">=3.10"
 dependencies = [
