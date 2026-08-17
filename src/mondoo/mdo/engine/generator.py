@@ -195,7 +195,8 @@ async def response_in_message_with_tool(
 async def stream_response_in_messages_with_tool(
     messages   : List[dict], 
     opts       : dict,
-    model_type : str
+    model_type : str,
+    time_out   : int = 20
 ) -> AsyncGenerator[dict, None]:
 
     API_KEY = None
@@ -212,7 +213,7 @@ async def stream_response_in_messages_with_tool(
 
     headers['Content-Type'] = 'application/json'
 
-    async with httpx.AsyncClient(timeout=None) as client:
+    async with httpx.AsyncClient(timeout=time_out) as client:
 
         while True:
             payload = {
