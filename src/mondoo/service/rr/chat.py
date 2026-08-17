@@ -11,11 +11,17 @@ class Role(str, Enum):
 
 
 class Message(BaseModel):
+    """
+        @TODO comment
+    """
     role:    Role
     content: str
 
 
 class Choice(BaseModel):
+    """
+        @TODO comment
+    """  
     index         : int
     message       : Message
     logprobs      : Optional[Dict] = None
@@ -23,6 +29,9 @@ class Choice(BaseModel):
 
 
 class Usage(BaseModel):
+    """
+    @TODO comment
+    """    
     prompt_tokens            : Optional[int]   = None
     completion_tokens        : Optional[int]   = None
     total_tokens             : Optional[int]   = None
@@ -33,6 +42,9 @@ class Usage(BaseModel):
 
 
 class ReqChatOptions(BaseModel):
+    """
+        @TODO comment
+    """
     max_tokens         : Optional[int]       = Field(100,   description="Maximum tokens to generate")
     temperature        : Optional[float]     = Field(1.0,   description="Randomness in output")
     top_p              : Optional[float]     = Field(1.0,   description="Nucleus sampling probability")
@@ -45,6 +57,9 @@ class ReqChatOptions(BaseModel):
 
 
 class ReqChatCompletion(BaseModel):
+    """
+        @TODO comment
+    """
     model_type : Literal['local', 'remote']
     messages   : List[Message]
     memory_id  : Optional[str]            = Field("", description="Should incetive the internal memory?")
@@ -52,6 +67,9 @@ class ReqChatCompletion(BaseModel):
     
           
 class RespChatCompletionNoStream(BaseModel):
+    """
+        @TODO comment
+    """
     id                 : str
     object             : str
     created            : int
