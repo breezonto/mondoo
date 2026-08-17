@@ -10,7 +10,7 @@ from mondoo.mdo.engine.generator import (
 from mondoo.service.rr.chat import (
     Role, Message, Usage, Choice,
     ReqChatCompletion,
-    RespChatCompletionInBurst
+    RespChatCompletionNoStream
 )
 
 from contextlib        import asynccontextmanager
@@ -33,7 +33,7 @@ if path.exists():
     with open(path, "r", encoding="utf-8") as f:
         SYSTEM_PROMPT_DEFAULT = f.read()
 else:
-    SYSTEM_PROMPT_DEFAULT = "你是个有帮助的助手. 接下来请让我们说中文吧！"
+    SYSTEM_PROMPT_DEFAULT = "You are an helpful assistant"
 
 
 SERVER_URL = set(os.getenv('PROXY_URL', '127.0.0.1').split(','))
@@ -156,7 +156,7 @@ async def chat_completion(req: ReqChatCompletion):
         finish_reason = 'stop'
     )
 
-    response = RespChatCompletionInBurst(
+    response = RespChatCompletionNoStream(
         id                 = f'chatcmpl-{int(time.time()*1000)}',
         object             = 'chat.completion',
         created            = int(time.time()),
