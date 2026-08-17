@@ -10,7 +10,7 @@ from mondoo.mdo.engine.generator import (
 from mondoo.service.rr.chat import (
     Role, Message, Usage, Choice,
     ReqChatCompletion,
-    RespChatCompletionInBurst
+    RespChatCompletionNoStream
 )
 
 from contextlib        import asynccontextmanager
@@ -156,7 +156,7 @@ async def chat_completion(req: ReqChatCompletion):
         finish_reason = 'stop'
     )
 
-    response = RespChatCompletionInBurst(
+    response = RespChatCompletionNoStream(
         id                 = f'chatcmpl-{int(time.time()*1000)}',
         object             = 'chat.completion',
         created            = int(time.time()),

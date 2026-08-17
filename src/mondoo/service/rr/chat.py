@@ -49,9 +49,9 @@ class ReqChatCompletion(BaseModel):
     messages   : List[Message]
     memory_id  : Optional[str]            = Field("", description="Should incetive the internal memory?")
     options    : Optional[ReqChatOptions] = ReqChatOptions()
-
-      
-class RespChatCompletionInBurst(BaseModel):
+    
+          
+class RespChatCompletionNoStream(BaseModel):
     id                 : str
     object             : str
     created            : int
