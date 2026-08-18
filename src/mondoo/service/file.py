@@ -5,7 +5,7 @@ from .rr.upload import (
 )
 
 from .rr.generic   import RespStatus
-from ..mdo.engine.manager.driver import FileManager
+from ..mdo.engine.manager.file_descriptor import FDManager
 from ..mdo.io.file.generic       import FileStage, FileRecord
 from mondoo.configurator   import get_global_config_value
 
@@ -62,7 +62,7 @@ def launch_parse_file_task_thread(
         record.desc.target_path = cache_path
         record.stage            = FileStage.CACHED
         record.total_chunks     = num_chunks
-        FileManager.record(file_id, record)
+        FDManager.record(file_id, record)
 
 
 @app.get("/api/v1/files/upload")
@@ -343,7 +343,7 @@ async def upload_slice(
     filename     : str = Form(...),
     total_slices : int = Form(...)
 ):
-    upload_dir = FileManager.source_dir
+    upload_dir = FDManager.source_dir
     os.makedirs(os.path.join(upload_dir, file_id), exist_ok=True)
     
     server_recv_dt = datetime.now(timezone.utc)
@@ -382,7 +382,7 @@ async def upload_slice(
     
     client_send_str, server_recv_str, transfer_duration_str = _measure_latency_()
     
-    record    = FileManager.get(file_id)
+    record    = FDManager.get(file_id)
     slice_dir = os.path.join(upload_dir, file_id)
     basename  = Path(filename).stem
     ext       = Path(filename).suffix.lstrip(".")
@@ -417,7 +417,7 @@ async def upload_slice(
     slice_path = os.path.join(slice_dir,  f'{slice_index:06d}.part')
     with open(slice_path, 'wb') as f: f.write(await file.read())    
     
-    await FileManager.record_async(file_id, record)
+    await FDManager.record_async(file_id, record)
     percent                = float(slice_index + 1) / float(total_slices) * 100
     server_save_dt         = datetime.now(timezone.utc)
     save_duration_ms       = (server_save_dt - server_recv_dt).total_seconds() * 1000
@@ -439,9 +439,9 @@ async def complete(
     file_id : str, 
     req     : ReqCompleteUpload
 ):
-    upload_dir = FileManager.source_dir
-    object_dir = FileManager.object_dir
-    record     = FileManager.get(file_id)
+    upload_dir = FDManager.source_dir
+    object_dir = FDManager.object_dir
+    record     = FDManager.get(file_id)
     
     def _merge_slices_(file_path):
         with open(file_path, 'wb') as outfile:
@@ -486,7 +486,7 @@ async def complete(
         record.curr_slice += 1
 
     record.stage = FileStage.UPLOADED
-    await FileManager.record_async(file_id, record) 
+    await FDManager.record_async(file_id, record) 
 
     if req.should_cache:
         if req.should_offline:
@@ -511,7 +511,7 @@ async def complete(
 
 @app.get('/api/v1/files/{file_id}/status', response_model=RespFileStatus)
 def get_file_status(file_id: str):
-    record = FileManager.get(file_id)
+    record = FDManager.get(file_id)
     if not record:
         logger.warning("Record not found: %s", file_id)
         raise HTTPException(status_code=404, detail="Record not found")
@@ -525,7 +525,7 @@ def get_file_status(file_id: str):
 
 @app.delete('/api/v1/files/{file_id}', response_model=RespFileStatus)
 async def remove_file(file_id: str):
-    record = FileManager.get(file_id)
+    record = FDManager.get(file_id)
     if not record:
         hint = f"Record not found: <{file_id}>"
         logger.warning(hint) 
@@ -535,7 +535,7 @@ async def remove_file(file_id: str):
     cache_path = record.desc.target_path
 
     try: # remove from database
-        FileManager.remove(file_id)
+        FDManager.remove(file_id)
     except Exception as e:
         hint = f"\"Failed to remove record from database\": {str(e)}"
         logger.warning(hint)
@@ -562,8 +562,8 @@ async def remove_file(file_id: str):
       
 @app.post('/api/v1/files/{file_id}/cache?={parse_meth}')
 def cache_file(file_id : str, parse_meth : str):
-    upload_dir = FileManager.source_dir  
-    record = FileManager.get(file_id)
+    upload_dir = FDManager.source_dir  
+    record = FDManager.get(file_id)
     
     if not record: raise HTTPException(404, "Record not found")
     if record.stage != FileStage.UPLOADED:
@@ -582,7 +582,7 @@ def cache_file(file_id : str, parse_meth : str):
     
 @app.get('/api/v1/files')
 def get_file_views():
-    records : list[FileRecord] = FileManager.get_all()
+    records : list[FileRecord] = FDManager.get_all()
     views  = []
     for record in records:
         views.append(record.view)
@@ -595,7 +595,7 @@ def get_file_views():
 
 @app.get('/api/v1/files/context')
 def get_file_context():
-    context = FileManager.context
+    context = FDManager.context
     return { 
         'status'  : 'ok',
         'context' : context
@@ -606,7 +606,7 @@ def get_file_context():
 def get_available_methods(ext : str):
     return {
         'status' : 'ok',
-        'methods': FileManager.get_available_methods(ext)
+        'methods': FDManager.get_available_methods(ext)
     }
 
     

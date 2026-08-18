@@ -1,4 +1,4 @@
-from ..engine.manager.driver       import FileManager
+from ..engine.manager.file_descriptor       import FDManager
 from ..io.file.generic     import FileDesc, FileStage, FileRecord
 
 import requests
@@ -46,15 +46,15 @@ def parse(
 ):  
     logger.info("\"Start to Cache File with Method [%s]: [%s]\"", method, file_id)
     try:
-        objs = FileManager.open(
+        objs = FDManager.open(
             path        = file_path,
             meth_names  = [method],
             file_id     = file_id
         )
         
         for obj in objs:
-            result_path = FileManager.dump(obj)
-            cache_path, num_chunks, ret_obj = FileManager.export(obj)
+            result_path = FDManager.dump(obj)
+            cache_path, num_chunks, ret_obj = FDManager.export(obj)
             
             # send_request_to_pg('write_json',
             #     file_id   = file_id,
@@ -87,6 +87,6 @@ async def do_parse_file_task_async(
         record.desc.target_path = target_path
         record.stage            = FileStage.CACHED
         record.total_chunks     = num_chunks
-        await FileManager.record(file_id, record)
+        await FDManager.record(file_id, record)
 
     return target_path

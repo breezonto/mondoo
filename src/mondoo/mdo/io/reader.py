@@ -23,7 +23,7 @@ from .file.pdf import (
 )
 
 from ..utils.warn      import WarnNotImplemented
-from ..engine.manager.driver   import FileManager
+from ..engine.manager.file_descriptor   import FDManager
 from ..io.file.generic import FileDesc
 
 from os      import PathLike
@@ -207,7 +207,7 @@ class IReader(ABC):
         return None
 
 
-@FileManager.register('pdf')
+@FDManager.register('pdf')
 class PDFReader(IReader):
     @classmethod
     def read(
@@ -440,7 +440,7 @@ class PDFReader(IReader):
         return ['text', 'ocr']
 
 
-@FileManager.register('docx')
+@FDManager.register('docx')
 class DOCXReader(IReader):
     @classmethod
     def read(
@@ -545,7 +545,7 @@ class DOCXReader(IReader):
         return ['text']
     
 
-@FileManager.register('png', 'jpg', 'jpeg')
+@FDManager.register('png', 'jpg', 'jpeg')
 class ImageReader(IReader):
     @classmethod
     def read(
@@ -670,7 +670,7 @@ class ImageReader(IReader):
         return ['ocr', 'caption']
     
 
-@FileManager.register('md')    
+@FDManager.register('md')    
 class MarkdownReader(IReader):    
     @classmethod
     def read(cls):
@@ -681,7 +681,7 @@ class MarkdownReader(IReader):
         return ['text', 'ocr']
     
 
-@FileManager.register('/dir')
+@FDManager.register('/dir')
 class DirectoryReader(IReader):
     @classmethod
     def read(cls):

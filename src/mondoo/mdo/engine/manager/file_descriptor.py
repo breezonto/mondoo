@@ -31,7 +31,7 @@ file_task_lock = threading.Lock()
 init_db_client_from_default_config()
 
 
-class FileManager: 
+class FDManager: 
     _registry        = {}
     _default_object_dir      = OBJECT_DIR
     _default_source_file_dir = SOURCE_DIR
@@ -373,8 +373,8 @@ class FileManager:
         return cls._default_source_file_dir
         
 
-logger.info("\"The Object Directory [%s]\"", FileManager.object_dir)
-logger.info("\"The Source Directory [%s]\"", FileManager.source_dir)
+logger.info("\"The Object Directory [%s]\"", FDManager.object_dir)
+logger.info("\"The Source Directory [%s]\"", FDManager.source_dir)
 
 
 from mondoo.mdo.io.reader import *
