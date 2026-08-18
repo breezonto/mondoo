@@ -1,4 +1,4 @@
-from mondoo.mdo.io.db.redis import *
+from mondoo.mdo.io.db.cache import *
 
 from typing import List
 

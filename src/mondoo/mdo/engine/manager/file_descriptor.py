@@ -1,8 +1,8 @@
 from ..dbc import init_db_client_from_default_config, get_current_dbc
 
 from mondoo.mdo.io.file.generic import *
-from mondoo.mdo.io.db.redis     import *
-from mondoo.configurator        import SOURCE_DIR, OBJECT_DIR, FD_TABLE
+from mondoo.mdo.io.db.cache     import *
+from mondoo.configurator import SOURCE_DIR, OBJECT_DIR, FD_TABLE
 
 from datetime import datetime, timezone
 from os       import PathLike
