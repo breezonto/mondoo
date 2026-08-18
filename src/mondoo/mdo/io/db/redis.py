@@ -27,7 +27,10 @@ def _write_data_to_redis_(
     set_name  : str
 ):
     id_name = record[id_field]
+
+    # if id_name exists, update it
     rh.hset(hash_name, id_name, json.dumps(record))
+
     if not rh.sismember(set_name, id_name):
         rh.rpush(list_name, id_name)
         rh.sadd(set_name, id_name)
