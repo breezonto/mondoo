@@ -77,7 +77,10 @@ def _clear_all_from_redis_(
 
 class CacheHelper:
     """
-    @TODO comment
+    CacheHepler is a client manager to maninuplate data caching in Redis.
+    For simplicity, it initially designed as a mixed data model with list, 
+    hash and set. It might not be a good design, the exact design will be 
+    proposed in the future with @TODO
     """
 
     def __init__(
