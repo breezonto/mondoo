@@ -48,6 +48,10 @@ class FDManager:
         return decorator
     
     def __init__(self):
+        """
+        @TODO comment
+        """
+
         pass
     
     @classmethod
@@ -58,32 +62,36 @@ class FDManager:
         file_id    : str = None,
         **kwargs
     ):
-      path_obj = Path(path)
-      if not path_obj.exists():
-          raise ValueError(f"Path {path} doesn't exist")
-      
-      if path_obj.is_file():
-        ext  = path_obj.suffix.split('.')[-1]
-        reader_cls = cls._get_reader_(ext)
+        """
+        @TODO comment
+        """
+
+        path_obj = Path(path)
+        if not path_obj.exists():
+            raise ValueError(f"Path {path} doesn't exist")
         
-        descriptor = reader_cls.set_descriptor(
-            path       = path,
-            cache_path = None,
-            file_id    = file_id
-        )
+        if path_obj.is_file():
+            ext  = path_obj.suffix.split('.')[-1]
+            reader_cls = cls._get_reader_(ext)
+            
+            descriptor = reader_cls.set_descriptor(
+                path       = path,
+                cache_path = None,
+                file_id    = file_id
+            )
+            
+            obj = reader_cls.read(
+                path              = path,
+                meth_names        = meth_names, # meth_names
+                intermediate_path = None,
+                descriptor        = descriptor,
+                **kwargs
+            )
+            
+            return [obj]
         
-        obj = reader_cls.read(
-            path              = path,
-            meth_names        = meth_names, # meth_names
-            intermediate_path = None,
-            descriptor        = descriptor,
-            **kwargs
-        )
-        
-        return [obj]
-        
-      elif path_obj.is_dir():
-          pass
+        elif path_obj.is_dir():
+            pass
     
     @classmethod
     def record(
@@ -91,6 +99,10 @@ class FDManager:
         file_id : str,
         record     : FileRecord 
     ):  
+        """
+        @TODO comment
+        """
+
         db = get_current_dbc(is_async=False)
 
         if record.curr_slice == 0:
@@ -151,6 +163,10 @@ class FDManager:
         file_id : str,
         record  : FileRecord 
     ):  
+        """
+        @TODO comment
+        """
+
         db = get_current_dbc(is_async=True)
 
         if record.curr_slice == 0:
@@ -208,6 +224,10 @@ class FDManager:
 
     @classmethod
     def remove(cls, file_id):
+        """
+        @TODO comment
+        """
+
         # remove_file_record(file_id)
         cls._cache_client.remove_record(file_id)
         try:
@@ -224,6 +244,10 @@ class FDManager:
     
     @classmethod
     async def remove_async(cls, file_id):
+        """
+        @TODO comment
+        """
+
         # remove_file_record(file_id)
         cls._cache_client.remove_record(file_id)
         try:
@@ -243,6 +267,10 @@ class FDManager:
         cls,
         file_id : str
     ) -> FileRecord:
+        """
+        @TODO comment
+        """
+
         data = cls._cache_client.read_record(file_id)
         if data:
             descriptor = FileDesc(
@@ -266,6 +294,10 @@ class FDManager:
     
     @classmethod
     def get_all(cls) -> List[FileRecord]:
+        """
+        @TODO comment
+        """
+
         rows = cls._cache_client.read_all_data()
         records = []
         for row in rows:
@@ -292,6 +324,10 @@ class FDManager:
     
     @classmethod
     def clean_all(cls):
+        """
+        @TODO comment
+        """
+                
         cls._cache_client.clear_all_data(
             cls._cache_client.list_name,
             cls._cache_client.hash_name,
@@ -303,6 +339,10 @@ class FDManager:
         cls,
         obj
     ) -> PathLike[str]:
+        """
+        @TODO comment
+        """
+
         ext                        = obj.descriptor.ext
         reader_cls                 = cls._get_reader_(ext)
         target_path                = os.path.join(cls._default_object_dir, obj.descriptor.stem)
@@ -315,6 +355,10 @@ class FDManager:
         cls,
         obj
     ) -> tuple[PathLike[str], int, dict]:
+        """
+        @TODO comment
+        """
+
         ext                        = obj.descriptor.ext
         reader_cls                 = cls._get_reader_(ext)
         target_path                = os.path.join(cls._default_object_dir, obj.descriptor.stem)
@@ -324,12 +368,20 @@ class FDManager:
     
     @classmethod
     def get_available_methods(cls, ext : str):
+        """
+        @TODO comment
+        """
+
         reader_cls = cls._get_reader_(ext)
         return reader_cls.methods
     
     
     @classproperty
     def context(cls) -> str:
+        """
+        @TODO comment
+        """
+
         records = cls.get_all()
         views = [record.user_view for record in records]
 
@@ -354,6 +406,10 @@ class FDManager:
     
     @classmethod
     def _get_reader_(cls, ext: str):
+        """
+        @TODO comment
+        """
+
         try:
             return cls._registry[ext.lower()]
         except KeyError:
@@ -362,14 +418,26 @@ class FDManager:
     
     @classproperty
     def registry(cls):
+        """
+        @TODO comment
+        """
+
         return cls._registry.keys()
        
     @classproperty
     def object_dir(cls):
+        """
+        @TODO comment
+        """
+
         return cls._default_object_dir
     
     @classproperty
     def source_dir(cls):
+        """
+        @TODO comment
+        """
+        
         return cls._default_source_file_dir
         
 
