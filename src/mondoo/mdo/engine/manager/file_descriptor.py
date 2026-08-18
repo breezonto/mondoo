@@ -1,13 +1,13 @@
-from mondoo.mdo.io.file.generic        import *
-from mondoo.configurator    import SOURCE_DIR, OBJECT_DIR
-from ..dbc             import init_db_client_from_default_config, get_current_dbc
+from mondoo.mdo.io.file.generic import *
+from mondoo.mdo.io.db.redis     import *
+from mondoo.configurator        import SOURCE_DIR, OBJECT_DIR
+
+from ..dbc import init_db_client_from_default_config, get_current_dbc
 
 from datetime import datetime, timezone
 from os       import PathLike
 from pathlib  import Path
 from typing   import List
-
-from mondoo.mdo.io.db.redis import *
 
 import os
 import json
@@ -15,7 +15,9 @@ import threading
 import logging
 import uuid
 
+
 logger = logging.getLogger(__name__)
+
 
 class classproperty:
     def __init__(self, fget):
@@ -437,7 +439,7 @@ class FDManager:
         """
         @TODO comment
         """
-        
+
         return cls._default_source_file_dir
         
 
