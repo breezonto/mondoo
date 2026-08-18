@@ -1,4 +1,4 @@
-from mondoo.configurator import get_global_config_value
+from mondoo.configurator import get_global_config_value, SERVER_URL, ALLOWED_IPS
 from ..mdo.engine.dbc    import get_current_async_dbc
 from .rr.vkbase       import *   
 from .rr.generic      import RespStatus
@@ -6,7 +6,6 @@ from .rr.generic      import RespStatus
 from fastapi import FastAPI, Form, HTTPException, Request, File, UploadFile
 from fastapi import Query
 
-# import mdo.engine.kbase as K
 import mondoo.mdo.api.knowledge as IK
 
 import logging

@@ -1,7 +1,7 @@
-from mondoo.configurator                       import get_global_config_value
+from mondoo.configurator                       import get_global_config_value, SERVER_URL, ALLOWED_IPS
 from mondoo.mdo.engine.handler                 import run_gateway
 from mondoo.mdo.engine.manager.message_history import MsgHistoryManager
-
+from mondoo.mdo.api.chatbot                    import SYSTEM_PROMPT_DEFAULT
 from mondoo.mdo.engine.generator import (
     response_in_message_with_tool,
     stream_response_in_messages_with_tool,
@@ -29,19 +29,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-path = Path('mdo/literate/role/default.md')
-if path.exists():
-    with open(path, "r", encoding="utf-8") as f:
-        SYSTEM_PROMPT_DEFAULT = f.read()
-else:
-    SYSTEM_PROMPT_DEFAULT = "You are an helpful assistant"
-
-
-SERVER_URL = set(os.getenv('PROXY_URL', '127.0.0.1').split(','))
 logger.info(f"Proxy URLs: {SERVER_URL}")
-
-
-ALLOWED_IPS = set(os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1').split(','))
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
 
 

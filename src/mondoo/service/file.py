@@ -7,7 +7,7 @@ from .rr.upload import (
 from .rr.generic   import RespStatus
 from ..mdo.engine.manager.file_descriptor import FDManager
 from ..mdo.io.file.generic       import FileStage, FileRecord
-from mondoo.configurator   import get_global_config_value
+from mondoo.configurator   import get_global_config_value, SERVER_URL, ALLOWED_IPS
 
 from pathlib               import Path
 from datetime              import datetime, timezone
@@ -25,11 +25,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-SERVER_URL = set(os.getenv('PROXY_URL', '127.0.0.1').split(','))
 logger.info(f"Proxy URLs: {SERVER_URL}")
-
-
-ALLOWED_IPS = set(os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1').split(','))
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
 
 
