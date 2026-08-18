@@ -6,6 +6,10 @@ import uuid
 
 
 class MsgHistoryManager:
+    """
+    @TODO comment
+    """
+
     _message_cache_name = 'message_history'
     _cache_client       = CacheHelper(_message_cache_name)
 
@@ -14,7 +18,15 @@ class MsgHistoryManager:
         history_id : str,
         message    : dict
     ):
+        """
+        @TODO comment
+        """
+            
         _message = message.copy()
+
+        # @TODO message id should be timestamp encoded serial number
+        # for convenience, temporally set it as random number
+
         _message['id'] = str(uuid.uuid4())
 
         self._cache_client.write_item(
@@ -28,6 +40,9 @@ class MsgHistoryManager:
         self,
         history_id: str
     ) -> List[Dict]:
+        """
+        @TODO comment
+        """
 
         records = self._cache_client.read_all_items(history_id)
 
@@ -39,6 +54,10 @@ class MsgHistoryManager:
         history_id: str,
         n: int
     ):
+        """
+        @TODO comment
+        """
+
         messages = self.query_messages(history_id)
 
         # Delete the first n messages
@@ -56,4 +75,8 @@ class MsgHistoryManager:
         self,
         history_id: str
     ):
+        """
+        @TODO comment
+        """
+
         self._cache_client.clear_all_items(history_id)
