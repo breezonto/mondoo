@@ -1,5 +1,6 @@
 from mondoo.mdo.io.db.redis import *
-from typing           import List
+
+from typing import List
 
 import uuid
 
@@ -11,17 +12,17 @@ class MsgHistoryManager:
     def push_message(
         self,
         history_id : str,
-        message            : dict
+        message    : dict
     ):
         record = {
-            "message_id" : str(uuid.uuid4()),
-            "role"       : message.role,
-            "content"    : message.content
+            'message_id' : str(uuid.uuid4()),
+            'role'       : message.role,
+            'content'    : message.content
         }
 
         self._cache_client.write_data(
             record,
-            id_field = "message_id",
+            id_field = 'message_id',
             suffix = history_id
         )
 
@@ -45,7 +46,7 @@ class MsgHistoryManager:
 
         # Delete the first n messages
         for msg in messages[:n]:
-            message_id = msg.get("message_id")
+            message_id = msg.get('message_id')
 
             if message_id:
                 self._cache_client.remove_record(
