@@ -92,9 +92,9 @@ class CacheHelper:
         """
 
         self._cache_name      = cache_name
-        self._list_cache_name = f'{cache_name}@list'
-        self._hash_cache_name = f'{cache_name}@hash'
-        self._set_cache_name  = f'{cache_name}@set'
+        self._list_cache_name = f'{cache_name}_list'
+        self._hash_cache_name = f'{cache_name}_hash'
+        self._set_cache_name  = f'{cache_name}_set'
 
 
     def write_item(
@@ -110,9 +110,9 @@ class CacheHelper:
         _write_data_to_redis_(
             obj,
             id_field  = id_field, 
-            list_name = f'{self._list_cache_name}-{suffix}',
-            hash_name = f'{self._hash_cache_name}-{suffix}',
-            set_name  = f'{self._set_cache_name}-{suffix}'
+            list_name = f'{self._list_cache_name}{suffix}',
+            hash_name = f'{self._hash_cache_name}{suffix}',
+            set_name  = f'{self._set_cache_name}{suffix}'
         )
 
 
@@ -125,11 +125,14 @@ class CacheHelper:
         @TODO comment
         """
 
+        if suffix is not '':
+            suffix = f'@{suffix}'
+        
         return _read_data_from_redis_(
             id,
-            list_name = f'{self._list_cache_name}-{suffix}',
-            hash_name = f'{self._hash_cache_name}-{suffix}',
-            set_name  = f'{self._set_cache_name}-{suffix}'
+            list_name = f'{self._list_cache_name}{suffix}',
+            hash_name = f'{self._hash_cache_name}{suffix}',
+            set_name  = f'{self._set_cache_name}{suffix}'
         )
 
 
@@ -142,11 +145,14 @@ class CacheHelper:
         @TODO comment
         """
 
+        if suffix is not '':
+            suffix = f'@{suffix}'
+        
         _remove_data_from_redis_(
             id,
-            list_name = f'{self._list_cache_name}-{suffix}',
-            hash_name = f'{self._hash_cache_name}-{suffix}',
-            set_name  = f'{self._set_cache_name}-{suffix}'
+            list_name = f'{self._list_cache_name}{suffix}',
+            hash_name = f'{self._hash_cache_name}{suffix}',
+            set_name  = f'{self._set_cache_name}{suffix}'
         )
 
 
@@ -158,14 +164,17 @@ class CacheHelper:
         @TODO comment
         """
 
+        if suffix is not '':
+            suffix = f'@{suffix}'
+        
         ids = rh.lrange(''.join([self._list_cache_name, '-', suffix]), 0, -1)
         data = []
         for curr_id in ids:
             instance = _read_data_from_redis_(
                 curr_id,
-                list_name = f'{self._list_cache_name}-{suffix}',
-                hash_name = f'{self._hash_cache_name}-{suffix}',
-                set_name  = f'{self._set_cache_name}-{suffix}'              
+                list_name = f'{self._list_cache_name}{suffix}',
+                hash_name = f'{self._hash_cache_name}{suffix}',
+                set_name  = f'{self._set_cache_name}{suffix}'              
             )
             if instance:
                 data.append(instance)
@@ -180,10 +189,13 @@ class CacheHelper:
         @TODO comment
         """
 
+        if suffix is not '':
+            suffix = f'@{suffix}'
+
         _clear_all_from_redis_(
-            list_name = f'{self._list_cache_name}-{suffix}',
-            hash_name = f'{self._hash_cache_name}-{suffix}',
-            set_name  = f'{self._set_cache_name}-{suffix}'
+            list_name = f'{self._list_cache_name}{suffix}',
+            hash_name = f'{self._hash_cache_name}{suffix}',
+            set_name  = f'{self._set_cache_name}{suffix}'
         )
         
     @property

@@ -10,7 +10,7 @@ class MsgHistoryManager:
     @TODO comment
     """
 
-    _cache_name   = 'message_history'
+    _cache_name   = 'message-history'
     _cache_client = CacheHelper(_cache_name)
 
     def push_message(
@@ -44,9 +44,9 @@ class MsgHistoryManager:
         @TODO comment
         """
 
-        records = self._cache_client.read_all_items(history_id)
+        messages = self._cache_client.read_all_items(history_id)
 
-        return records
+        return messages
 
 
     def delete_first_n_messages(
