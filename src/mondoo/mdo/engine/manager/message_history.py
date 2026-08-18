@@ -20,7 +20,7 @@ class MsgHistoryManager:
             'content'    : message.content
         }
 
-        self._cache_client.write_data(
+        self._cache_client.write_item(
             record,
             id_field = 'message_id',
             suffix = history_id
@@ -32,7 +32,7 @@ class MsgHistoryManager:
         history_id: str
     ) -> List[Dict]:
 
-        records = self._cache_client.read_all_data(history_id)
+        records = self._cache_client.read_all_items(history_id)
 
         return records
 
@@ -49,7 +49,7 @@ class MsgHistoryManager:
             message_id = msg.get('message_id')
 
             if message_id:
-                self._cache_client.remove_record(
+                self._cache_client.remove_item(
                     message_id,
                     suffix=history_id
                 )
@@ -59,4 +59,4 @@ class MsgHistoryManager:
         self,
         history_id: str
     ):
-        self._cache_client.clear_all_data(history_id)
+        self._cache_client.clear_all_items(history_id)

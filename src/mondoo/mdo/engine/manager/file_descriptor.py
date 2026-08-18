@@ -156,7 +156,7 @@ class FDManager:
         record_obj = record.model_dump()
         record_obj['complete_upload_time'] = record_time_str
         # write_data_to_redis(record_obj)
-        cls._cache_client.write_data(record_obj, id_field='file_id')
+        cls._cache_client.write_item(record_obj, id_field='file_id')
 
     
     @classmethod
@@ -222,7 +222,7 @@ class FDManager:
         record_obj = record.model_dump()
         record_obj['complete_upload_time'] = record_time_str
         # write_data_to_redis(record_obj)
-        cls._cache_client.write_data(record_obj, id_field='file_id')
+        cls._cache_client.write_item(record_obj, id_field='file_id')
 
     @classmethod
     def remove(cls, file_id):
@@ -231,7 +231,7 @@ class FDManager:
         """
 
         # remove_file_record(file_id)
-        cls._cache_client.remove_record(file_id)
+        cls._cache_client.remove_item(file_id)
         try:
             db = get_current_dbc(is_async=False)
             
@@ -251,7 +251,7 @@ class FDManager:
         """
 
         # remove_file_record(file_id)
-        cls._cache_client.remove_record(file_id)
+        cls._cache_client.remove_item(file_id)
         try:
             db = get_current_dbc(is_async=True)
             # NOTE: await
@@ -273,7 +273,7 @@ class FDManager:
         @TODO comment
         """
 
-        data = cls._cache_client.read_record(file_id)
+        data = cls._cache_client.read_item(file_id)
         if data:
             descriptor = FileDesc(
                 file_id     = data['file_id'],
@@ -300,7 +300,7 @@ class FDManager:
         @TODO comment
         """
 
-        rows = cls._cache_client.read_all_data()
+        rows = cls._cache_client.read_all_items()
         records = []
         for row in rows:
             data = row
@@ -330,7 +330,7 @@ class FDManager:
         @TODO comment
         """
                 
-        cls._cache_client.clear_all_data(
+        cls._cache_client.clear_all_items(
             cls._cache_client.list_name,
             cls._cache_client.hash_name,
             cls._cache_client.set_name,

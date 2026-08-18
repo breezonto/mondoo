@@ -97,7 +97,7 @@ class CacheHelper:
         self._set_cache_name  = f'{cache_name}@set'
 
 
-    def write_data(
+    def write_item(
         self, 
         obj      : dict,
         id_field : str,
@@ -116,7 +116,7 @@ class CacheHelper:
         )
 
 
-    def read_record(
+    def read_item(
         self, 
         id     : str,
         suffix : str = ''
@@ -133,7 +133,7 @@ class CacheHelper:
         )
 
 
-    def remove_record(
+    def remove_item(
         self,
         id     : str,
         suffix : str = ''
@@ -150,7 +150,7 @@ class CacheHelper:
         )
 
 
-    def read_all_data(
+    def read_all_items(
         self,
         suffix : str = ''
     ):
@@ -172,7 +172,7 @@ class CacheHelper:
         return data
 
 
-    def clear_all_data(
+    def clear_all_items(
         self,
         suffix : str = ''
     ):
