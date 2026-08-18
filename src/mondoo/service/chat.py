@@ -4,7 +4,8 @@ from mondoo.mdo.engine.manager.message_history import MessageHistoryManger
 
 from mondoo.mdo.engine.generator import (
     response_in_message_with_tool,
-    stream_response_in_messages_with_tool
+    stream_response_in_messages_with_tool,
+    query_message_history
 )
 
 from mondoo.service.rr.chat import (
@@ -105,8 +106,16 @@ async def chat_completion(req: ReqChatCompletion):
     stream_gen = None
     resp       = None
     elapsed    = 0.0
-    
-    messages = req.messages
+
+    if len(req.messages) < 1: # messages is empty
+        HTTPException(status_code=422, detail="messages should not be empty!")
+
+    if req.memory_id is not None:
+        messages = await query_message_history(req.memory_id)
+        messages.append(req.messages)
+    else:
+        messages = req.messages
+
     if messages[0].role != Role.SYSTEM:
         message = Message(
             role    = Role.SYSTEM,
@@ -177,4 +186,4 @@ async def chat_completion(req: ReqChatCompletion):
 
 @app.get('/api/v1/chat/{history_id}')
 def get_message_history(history_id : str):
-    return MessageHistoryManger.query_messages(history_id)
+    return query_message_history(history_id)

@@ -14,6 +14,9 @@ from mondoo.configurator import (
     get_global_config_value
 )
 
+from .manager.message_history import MessageHistoryManger
+
+
 logger = logging.getLogger(__name__)
 
 LOCAL_LLM_MODEL_PATH = get_global_config_value('assets/default_local_llm_path')
@@ -50,11 +53,11 @@ if ENABLE_LOCAL_LLM:
 logger.info(f"Local LLM Inference is {'enabled' if ENABLE_LOCAL_LLM else 'disabled'}")
 
 
-"""
-@TODO comment
-"""
-
 def _convert_2_deepseek_tool_spec_(desc):
+    """
+    @TODO comment
+    """
+
     result = []
     for t in desc['tools']:
         result.append({
@@ -69,11 +72,11 @@ def _convert_2_deepseek_tool_spec_(desc):
     return result
 
 
-"""
-@TODO comment
-"""
-
 async def _get_all_available_tools_():
+    """
+    @TODO comment
+    """
+
     reader, writer = await asyncio.open_unix_connection(SOCK_PATH_4_GATEWAY)
     req = { 'cmd': 'list_tools', 'args': None }
     writer.write((json.dumps(req) + '\n').encode())
@@ -96,11 +99,11 @@ async def _get_all_available_tools_():
             return _convert_2_deepseek_tool_spec_(tools)    
         
 
-"""
-@TODO comment
-"""
 
 async def execute_tool_async(name: str, args: dict):
+    """
+    @TODO comment
+    """
     reader, writer = await asyncio.open_unix_connection(SOCK_PATH_4_GATEWAY)
 
     req = { 'cmd': 'call', 'target': name, 'args': args }
@@ -123,16 +126,16 @@ async def execute_tool_async(name: str, args: dict):
             return json.loads(line)
 
 
-"""
-@TODO comment
-"""
-
 async def response_in_message_with_tool(
     messages   : List[dict], 
     opts       : dict, 
     model_type : str,
     time_out   : int = 200
 ) -> str:
+    """
+    @TODO comment
+    """
+
     API_KEY = None
     headers = dict()
 
@@ -198,7 +201,9 @@ async def stream_response_in_messages_with_tool(
     model_type : str,
     time_out   : int = 20
 ) -> AsyncGenerator[dict, None]:
-
+    """
+    @TODO comment
+    """
     API_KEY = None
     headers = {}
 
@@ -315,5 +320,10 @@ async def stream_response_in_messages_with_tool(
                 break
 
 
-async def get_message_history():
-    pass
+
+async def query_message_history(history_id : str):
+    """
+    @TODO comment
+    """
+
+    return MessageHistoryManger.query_messages(history_id)

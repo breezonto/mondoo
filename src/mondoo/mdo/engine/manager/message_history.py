@@ -3,13 +3,14 @@ from typing           import List
 
 import uuid
 
+
 class MessageHistoryManger:
     _message_cache_name = 'message_history'
     _cache_client       = CacheWrapper(_message_cache_name)
 
     def push_message(
         self,
-        message_history_id : str,
+        history_id : str,
         message            : dict
     ):
         record = {
@@ -21,26 +22,26 @@ class MessageHistoryManger:
         self._cache_client.write_data(
             record,
             id_field = "message_id",
-            suffix = message_history_id
+            suffix = history_id
         )
 
 
     def query_messages(
         self,
-        message_history_id: str
+        history_id: str
     ) -> List[Dict]:
 
-        records = self._cache_client.read_all_data(message_history_id)
+        records = self._cache_client.read_all_data(history_id)
 
         return records
 
 
     def delete_first_n_messages(
         self,
-        message_history_id: str,
+        history_id: str,
         n: int
     ):
-        messages = self.query_messages(message_history_id)
+        messages = self.query_messages(history_id)
 
         # Delete the first n messages
         for msg in messages[:n]:
@@ -49,12 +50,12 @@ class MessageHistoryManger:
             if message_id:
                 self._cache_client.remove_record(
                     message_id,
-                    suffix=message_history_id
+                    suffix=history_id
                 )
 
 
     def clear_messages(
         self,
-        message_history_id: str
+        history_id: str
     ):
-        self._cache_client.clear_all_data(message_history_id)
+        self._cache_client.clear_all_data(history_id)
