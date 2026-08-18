@@ -14,7 +14,7 @@ from mondoo.configurator import (
     get_global_config_value
 )
 
-from .manager.message_history import MessageHistoryManger
+from .manager.message_history import MsgHistoryManager
 
 
 logger = logging.getLogger(__name__)
@@ -300,7 +300,7 @@ async def stream_response_in_messages_with_tool(
                 })
 
 
-                MessageHistoryManger.push_message(
+                MsgHistoryManager.push_message(
                     history_id,
                     message= { 
                         'role'       : 'assistant', 
@@ -324,7 +324,7 @@ async def stream_response_in_messages_with_tool(
                         'content'      : result
                     })
 
-                    MessageHistoryManger.push_message(
+                    MsgHistoryManager.push_message(
                         history_id,
                         message= { 
                             'role'         : 'tool', 
@@ -341,7 +341,7 @@ async def stream_response_in_messages_with_tool(
                     'content' : content
                 })
 
-                MessageHistoryManger.push_message(
+                MsgHistoryManager.push_message(
                     history_id,
                     message= { 
                         'role'    : 'assistant', 
@@ -357,4 +357,4 @@ async def query_message_history(history_id : str):
     @TODO comment
     """
 
-    return MessageHistoryManger.query_messages(history_id)
+    return MsgHistoryManager.query_messages(history_id)

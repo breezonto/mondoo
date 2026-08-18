@@ -4,7 +4,7 @@ from typing           import List
 import uuid
 
 
-class MessageHistoryManger:
+class MsgHistoryManager:
     _message_cache_name = 'message_history'
     _cache_client       = CacheWrapper(_message_cache_name)
 
