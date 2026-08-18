@@ -199,13 +199,17 @@ async def stream_response_in_messages_with_tool(
     messages   : List[dict], 
     opts       : dict,
     model_type : str,
+    history_id : str,
     time_out   : int = 20
 ) -> AsyncGenerator[dict, None]:
     """
     @TODO comment
     """
+
     API_KEY = None
     headers = {}
+
+    _messages = messages.copy()
 
     if model_type == 'remote':
         api_url = API_ENDPOINT['remote']
@@ -223,7 +227,7 @@ async def stream_response_in_messages_with_tool(
         while True:
             payload = {
                 'model'       : 'deepseek-chat' if model_type == 'remote' else 'local-chat-model',
-                'messages'    : messages,
+                'messages'    : _messages,
                 'tools'       : await _get_all_available_tools_(),
                 'max_tokens'  : opts['max_tokens'],
                 'temperature' : opts['temperature'],
@@ -289,12 +293,22 @@ async def stream_response_in_messages_with_tool(
                         break
 
             if tool_calls_buffer:
-                messages.append({
+                _messages.append({
                     'role'       : 'assistant',
                     'content'    : content,
                     'tool_calls' : tool_calls_buffer
                 })
 
+
+                MessageHistoryManger.push_message(
+                    history_id,
+                    message= { 
+                        'role'       : 'assistant', 
+                        'content'    : content, 
+                        'tool_calls' : tool_calls_buffer 
+                    }
+                )
+                
                 for tool_call in tool_calls_buffer:
                     name = tool_call['function']['name']
                     args = tool_call['function']['arguments']
@@ -304,19 +318,36 @@ async def stream_response_in_messages_with_tool(
 
                     result = await execute_tool_async(name, args)
 
-                    messages.append({
+                    _messages.append({
                         'role'         : 'tool',
                         'tool_call_id' : tool_call['id'],
                         'content'      : result
                     })
 
+                    MessageHistoryManger.push_message(
+                        history_id,
+                        message= { 
+                            'role'         : 'tool', 
+                            'content'      : content, 
+                            'tool_call_id' : tool_call['id'],
+                        }
+                    )
+
                 continue
 
             else:
-                messages.append({
+                _messages.append({
                     'role'    : 'assistant',
                     'content' : content
                 })
+
+                MessageHistoryManger.push_message(
+                    history_id,
+                    message= { 
+                        'role'    : 'assistant', 
+                        'content' : content
+                    }
+                )
                 break
 
 
