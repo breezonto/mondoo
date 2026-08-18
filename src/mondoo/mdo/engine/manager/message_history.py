@@ -14,15 +14,12 @@ class MsgHistoryManager:
         history_id : str,
         message    : dict
     ):
-        record = {
-            'message_id' : str(uuid.uuid4()),
-            'role'       : message.role,
-            'content'    : message.content
-        }
+        _message = message.copy()
+        _message['id'] = str(uuid.uuid4())
 
         self._cache_client.write_item(
-            record,
-            id_field = 'message_id',
+            _message,
+            id_field = 'id',
             suffix = history_id
         )
 
@@ -46,7 +43,7 @@ class MsgHistoryManager:
 
         # Delete the first n messages
         for msg in messages[:n]:
-            message_id = msg.get('message_id')
+            message_id = msg.get('id')
 
             if message_id:
                 self._cache_client.remove_item(
