@@ -1,8 +1,8 @@
+from ..dbc import init_db_client_from_default_config, get_current_dbc
+
 from mondoo.mdo.io.file.generic import *
 from mondoo.mdo.io.db.redis     import *
-from mondoo.configurator        import SOURCE_DIR, OBJECT_DIR
-
-from ..dbc import init_db_client_from_default_config, get_current_dbc
+from mondoo.configurator        import SOURCE_DIR, OBJECT_DIR, FD_TABLE
 
 from datetime import datetime, timezone
 from os       import PathLike
@@ -37,8 +37,8 @@ class FDManager:
     _registry        = {}
     _default_object_dir      = OBJECT_DIR
     _default_source_file_dir = SOURCE_DIR
-    _default_file_table_name = 'file_records'
-    _file_record_cache_name  = 'file_record_cache'
+    _default_file_table_name = FD_TABLE
+    _file_record_cache_name  = FD_TABLE + '_cache'
     _cache_client = CacheWrapper(_file_record_cache_name)
 
     @classmethod
