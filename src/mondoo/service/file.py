@@ -542,8 +542,8 @@ async def remove_file(file_id: str):
         raise HTTPException(status_code=500, detail=hint)
 
     try: # remove source and cached files
-        ifsys.remove_file(file_path)
-        ifsys.remove_cache(cache_path)
+        ifsys.remove_src_file(file_path)
+        ifsys.remove_fd_file(cache_path)
     except FileNotFoundError as e:
         hint = f"\"Delete resource missing for <{file_id}>: {str(e)}\""
         logger.warning(hint)

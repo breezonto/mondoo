@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 file_task_lock = threading.Lock()
 
 
-def remove_file(path):
+def remove_src_file(path):
     if not path or not os.path.exists(path):
         raise FileNotFoundError(f"File not found: {path}")
     
@@ -27,7 +27,7 @@ def remove_file(path):
         raise FileNotFoundError(path)
 
 
-def remove_cache(path):
+def remove_fd_file(path):
     if not path or not os.path.exists(path):
         raise FileNotFoundError(f"Cache not found: {path}")
     
