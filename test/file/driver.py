@@ -19,13 +19,13 @@ if __name__ == '__main__':
     
     @with_duration_banner("Test FileManager.open()")
     def test_open():    
-        objs = FDManager.open(
+        objs = FDManager.parse(
             path           = '/home/guard/file/威海市重大突发事件应急保障体系建设规划.pdf',
             meth_names     = ['text'],
             file_id        = '000000'
         )
         
-        objs = FDManager.open(
+        objs = FDManager.parse(
             path           = '/home/guard/file/中国能源金融发展报告+（2025+年）.pdf',
             meth_names     = ['text'],
             file_id        = '111111'

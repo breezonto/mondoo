@@ -46,7 +46,7 @@ def parse(
 ):  
     logger.info("\"Start to Cache File with Method [%s]: [%s]\"", method, file_id)
     try:
-        objs = FDManager.open(
+        objs = FDManager.parse(
             path        = file_path,
             meth_names  = [method],
             file_id     = file_id
@@ -87,6 +87,6 @@ async def do_parse_file_task_async(
         record.desc.target_path = target_path
         record.stage            = FileStage.CACHED
         record.total_chunks     = num_chunks
-        await FDManager.record(file_id, record)
+        await FDManager.archive(file_id, record)
 
     return target_path

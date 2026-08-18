@@ -33,7 +33,11 @@ file_task_lock = threading.Lock()
 init_db_client_from_default_config()
 
 
-class FDManager: 
+class FDManager:
+    """
+    FDManager for archiving and parsing the file.
+    """ 
+
     _registry        = {}
     _default_object_dir      = OBJECT_DIR
     _default_source_file_dir = SOURCE_DIR
@@ -44,6 +48,10 @@ class FDManager:
 
     @classmethod
     def register(cls, *extensions):
+        """
+        register all supported extension for parsing
+        """
+
         def decorator(reader_cls):
             for ext in extensions:
                 cls._registry[ext.lower()] = reader_cls
@@ -58,7 +66,7 @@ class FDManager:
         pass
     
     @classmethod
-    def open(
+    def parse(
         cls, 
         path       : PathLike[str],
         meth_names : List[str],
@@ -97,10 +105,10 @@ class FDManager:
             pass
     
     @classmethod
-    def record(
+    def archive(
         cls,
         file_id : str,
-        record     : FileRecord 
+        record  : FileRecord 
     ):  
         """
         @TODO comment
@@ -161,7 +169,7 @@ class FDManager:
 
     
     @classmethod
-    async def record_async(
+    async def archive_in_async(
         cls,
         file_id : str,
         record  : FileRecord 
@@ -226,7 +234,7 @@ class FDManager:
         cls._cache_client.write_item(record_obj, id_field='file_id')
 
     @classmethod
-    def remove(cls, file_id):
+    def erase(cls, file_id):
         """
         @TODO comment
         """
@@ -246,7 +254,7 @@ class FDManager:
 
     
     @classmethod
-    async def remove_async(cls, file_id):
+    async def erase_in_async(cls, file_id):
         """
         @TODO comment
         """
@@ -266,7 +274,7 @@ class FDManager:
 
 
     @classmethod
-    def get(
+    def query(
         cls,
         file_id : str
     ) -> FileRecord:
@@ -296,7 +304,7 @@ class FDManager:
         return None
     
     @classmethod
-    def get_all(cls) -> List[FileRecord]:
+    def query_all(cls) -> List[FileRecord]:
         """
         @TODO comment
         """
@@ -326,7 +334,7 @@ class FDManager:
         return records
     
     @classmethod
-    def clean_all(cls):
+    def erase_all(cls):
         """
         @TODO comment
         """
@@ -343,12 +351,13 @@ class FDManager:
         obj
     ) -> PathLike[str]:
         """
-        @TODO comment
+        dump the file content to JSON object file
         """
 
-        ext                        = obj.descriptor.ext
-        reader_cls                 = cls._get_reader_(ext)
-        target_path                = os.path.join(cls._default_object_dir, obj.descriptor.stem)
+        ext         = obj.descriptor.ext
+        reader_cls  = cls._get_reader_(ext)
+        target_path = os.path.join(cls._default_object_dir, obj.descriptor.stem)
+
         obj.descriptor.target_path = target_path
         reader_cls.dump(obj.body, target_path)
         return target_path
@@ -359,12 +368,13 @@ class FDManager:
         obj
     ) -> tuple[PathLike[str], int, dict]:
         """
-        @TODO comment
+        export the file content to markdown file
         """
 
-        ext                        = obj.descriptor.ext
-        reader_cls                 = cls._get_reader_(ext)
-        target_path                = os.path.join(cls._default_object_dir, obj.descriptor.stem)
+        ext         = obj.descriptor.ext
+        reader_cls  = cls._get_reader_(ext)
+        target_path = os.path.join(cls._default_object_dir, obj.descriptor.stem)
+
         obj.descriptor.target_path = target_path
         num_chunks, ret_obj = reader_cls.export(obj.body, obj.descriptor, target_path)
         return target_path, num_chunks, ret_obj
@@ -385,7 +395,7 @@ class FDManager:
         @TODO comment
         """
 
-        records = cls.get_all()
+        records = cls.query_all()
         views = [record.user_view for record in records]
 
         prompt = f"""
