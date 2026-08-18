@@ -103,7 +103,8 @@ config_file_path = {
     Data Storage
 """
 
-FD_TABLE   = os.getenv('fd_table', 'file_records')
+FD_TABLE   = os.getenv('FD_TABLE', 'file_records')
+MSG_TABLE  = os.getenv('MSG_TABLE', 'message_history')
 
 PSQL_HOST  = os.getenv('PSQL_HOST', 'localhost')
 PSQL_PORT  = os.getenv('PSQL_PORT', 5432)
