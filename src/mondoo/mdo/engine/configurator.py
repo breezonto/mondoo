@@ -50,14 +50,6 @@ SOCK_PATH_4_GATEWAY = assets['sock_path_4_gateway']
 LOCAL_LLM_MODEL_PATH       = assets['default_local_llm_path']
 LOCAL_EMBEDDING_MODEL_PATH = assets['default_embedding_model_path']
 
-# REDIS_HOST = storage['redis']['host']
-# REDIS_PORT = storage['redis']['port']
-# REDIS_DB   = storage['redis']['db']
-
-# PSQL_HOST = storage['postgresql']['host']
-# PSQL_PORT = storage['postgresql']['port']
-# PSQL_DB   = storage['postgresql']['db']
-
 
 """
     Configurations of URLs and endpoints
@@ -125,6 +117,14 @@ def get_configuration_file_path(names : Optional[List[str]] = None):
 """
 
 FD_TABLE = os.getenv('fd_table', 'file_records')
+
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = os.getenv('REDIS_PORT', 6379)
+REDIS_DB   = list(set(map(int, os.getenv('REDIS_DB').split(','))))
+
+# PSQL_HOST = storage['postgresql']['host']
+# PSQL_PORT = storage['postgresql']['port']
+# PSQL_DB   = storage['postgresql']['db']
 
 
 """

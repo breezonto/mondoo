@@ -99,6 +99,21 @@ config_file_path = {
 }
 
 
+"""
+    Data Storage
+"""
+
+FD_TABLE = os.getenv('fd_table', 'file_records')
+
+REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
+REDIS_PORT = os.getenv('REDIS_PORT', 6379)
+REDIS_DB   = list(set(map(int, os.getenv('REDIS_DB').split(','))))
+
+# PSQL_HOST = storage['postgresql']['host']
+# PSQL_PORT = storage['postgresql']['port']
+# PSQL_DB   = storage['postgresql']['db']
+
+
 def get_configuration_file_path(names : Optional[List[str]] = None):
     global config_file_path
 

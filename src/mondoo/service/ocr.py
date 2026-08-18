@@ -1,4 +1,5 @@
-from mondoo.configurator import get_global_config_value, SERVER_URL, ALLOWED_IPS
+from mondoo.configurator import SERVER_URL, ALLOWED_IPS
+
 from .rr.ocr          import *
 
 from fastapi  import FastAPI, HTTPException, Request
