@@ -10,8 +10,8 @@ class MsgHistoryManager:
     @TODO comment
     """
 
-    _message_cache_name = 'message_history'
-    _cache_client       = CacheHelper(_message_cache_name)
+    _cache_name   = 'message_history'
+    _cache_client = CacheHelper(_cache_name)
 
     def push_message(
         self,
