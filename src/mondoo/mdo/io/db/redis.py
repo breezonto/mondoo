@@ -13,7 +13,7 @@ REDIS_DB   = list(set(map(int, os.getenv('REDIS_DB').split(','))))
 rh = redis.Redis(
     host = REDIS_HOST, 
     port = REDIS_PORT, 
-    db   = REDIS_DB[0], # REDIS_DB是一个数组
+    db   = REDIS_DB[0], # @TODO REDIS_DB is an array, the exact design is to be resolved
     decode_responses = True
 )
 
@@ -76,10 +76,18 @@ def _clear_all_from_redis_(
 
 
 class CacheHelper:
+    """
+    @TODO comment
+    """
+
     def __init__(
         self,
         cache_name : str
     ):
+        """
+        @TODO comment
+        """
+
         self._cache_name      = cache_name
         self._list_cache_name = f'{cache_name}@list'
         self._hash_cache_name = f'{cache_name}@hash'
@@ -92,6 +100,10 @@ class CacheHelper:
         id_field : str,
         suffix   : str = ''
     ):
+        """
+        @TODO comment
+        """
+
         _write_data_to_redis_(
             obj,
             id_field  = id_field, 
@@ -106,6 +118,10 @@ class CacheHelper:
         id     : str,
         suffix : str = ''
     ):
+        """
+        @TODO comment
+        """
+
         return _read_data_from_redis_(
             id,
             list_name = f'{self._list_cache_name}-{suffix}',
@@ -119,6 +135,10 @@ class CacheHelper:
         id     : str,
         suffix : str = ''
     ):
+        """
+        @TODO comment
+        """
+
         _remove_data_from_redis_(
             id,
             list_name = f'{self._list_cache_name}-{suffix}',
@@ -131,6 +151,10 @@ class CacheHelper:
         self,
         suffix : str = ''
     ):
+        """
+        @TODO comment
+        """
+
         ids = rh.lrange(''.join([self._list_cache_name, '-', suffix]), 0, -1)
         data = []
         for curr_id in ids:
@@ -149,6 +173,10 @@ class CacheHelper:
         self,
         suffix : str = ''
     ):
+        """
+        @TODO comment
+        """
+
         _clear_all_from_redis_(
             list_name = f'{self._list_cache_name}-{suffix}',
             hash_name = f'{self._hash_cache_name}-{suffix}',
