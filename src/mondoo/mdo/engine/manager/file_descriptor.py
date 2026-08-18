@@ -39,7 +39,7 @@ class FDManager:
     _default_source_file_dir = SOURCE_DIR
     _default_file_table_name = FD_TABLE
     _file_record_cache_name  = FD_TABLE + '_cache'
-    _cache_client = CacheWrapper(_file_record_cache_name)
+    _cache_client = CacheHelper(_file_record_cache_name)
 
     @classmethod
     def register(cls, *extensions):

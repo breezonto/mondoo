@@ -75,7 +75,7 @@ def _clear_all_from_redis_(
         rh.srem(set_name, *members)
 
 
-class CacheWrapper:
+class CacheHelper:
     def __init__(
         self,
         cache_name : str
