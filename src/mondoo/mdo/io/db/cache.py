@@ -1,3 +1,11 @@
+"""
+
+CacheHelper that wrap redis as the cache helper class. It mainly manages cache block as a mixed model with list, 
+hash and set. List for sequential accessor, Hash for retrieving (random access) and Set for uniqueness check. 
+For convenience, every data entry (i.e. item) is stored as an object.
+
+"""
+
 from mondoo.configurator import REDIS_HOST, REDIS_PORT, REDIS_DB
 
 from typing import Optional, Dict
@@ -15,43 +23,55 @@ rh = redis.Redis(
 )
 
 
-def _write_data_to_redis_(
-    record    : dict,
+def _write_entry_to_cache_(
+    entry     : dict,
     *,
-    id_field  : str,
     list_name : str,
     hash_name : str,
-    set_name  : str
+    set_name  : str,
+    id_field  : str = 'id'
 ):
-    id_name = record[id_field]
+    """
+    write data to cache
+    """
+
+    id_name = entry[id_field]
 
     # if id_name exists, update it
-    rh.hset(hash_name, id_name, json.dumps(record))
+    rh.hset(hash_name, id_name, json.dumps(entry))
 
     if not rh.sismember(set_name, id_name):
         rh.rpush(list_name, id_name)
         rh.sadd(set_name, id_name)
         
 
-def _remove_data_from_redis_(
+def _remove_entry_from_cache_(
     id : str,
     *,
     list_name : str,
     hash_name : str,
     set_name  : str
 ):
+    """
+    @TODO
+    """
+        
     rh.hdel(hash_name, id)
     rh.lrem(list_name, 0, id)
     rh.srem(set_name, id)
 
 
-def _read_data_from_redis_(
+def _read_entry_from_cache_(
     id : str,
     *,
     list_name : str,
     hash_name : str,
     set_name  : str
 ) -> Optional[dict]:
+    """
+    @TODO
+    """
+
     data = rh.hget(hash_name, id)
     if data:
         return json.loads(data)
@@ -59,11 +79,15 @@ def _read_data_from_redis_(
     return None
 
 
-def _clear_all_from_redis_(
+def _clear_all_entries_in_cache_(
     list_name : str,
     hash_name : str,
     set_name  : str
 ):
+    """
+    @TODO
+    """
+
     fields = rh.hkeys(hash_name)
     if fields:
         rh.hdel(hash_name, *fields)
@@ -107,7 +131,7 @@ class CacheHelper:
         @TODO comment
         """
 
-        _write_data_to_redis_(
+        _write_entry_to_cache_(
             obj,
             id_field  = id_field, 
             list_name = f'{self._list_cache_name}{suffix}',
@@ -128,7 +152,7 @@ class CacheHelper:
         if suffix is not '':
             suffix = f'@{suffix}'
         
-        return _read_data_from_redis_(
+        return _read_entry_from_cache_(
             id,
             list_name = f'{self._list_cache_name}{suffix}',
             hash_name = f'{self._hash_cache_name}{suffix}',
@@ -148,7 +172,7 @@ class CacheHelper:
         if suffix is not '':
             suffix = f'@{suffix}'
         
-        _remove_data_from_redis_(
+        _remove_entry_from_cache_(
             id,
             list_name = f'{self._list_cache_name}{suffix}',
             hash_name = f'{self._hash_cache_name}{suffix}',
@@ -170,7 +194,7 @@ class CacheHelper:
         ids = rh.lrange(''.join([self._list_cache_name, '-', suffix]), 0, -1)
         data = []
         for curr_id in ids:
-            instance = _read_data_from_redis_(
+            instance = _read_entry_from_cache_(
                 curr_id,
                 list_name = f'{self._list_cache_name}{suffix}',
                 hash_name = f'{self._hash_cache_name}{suffix}',
@@ -192,7 +216,7 @@ class CacheHelper:
         if suffix is not '':
             suffix = f'@{suffix}'
 
-        _clear_all_from_redis_(
+        _clear_all_entries_in_cache_(
             list_name = f'{self._list_cache_name}{suffix}',
             hash_name = f'{self._hash_cache_name}{suffix}',
             set_name  = f'{self._set_cache_name}{suffix}'
