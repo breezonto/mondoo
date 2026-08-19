@@ -1,3 +1,11 @@
+from mondoo.configurator import (
+    API_ENDPOINT,
+    END_FRAME,
+    get_global_config_value
+)
+
+from .manager.message_history import MsgHistoryManager
+
 from fastapi    import HTTPException
 from typing     import AsyncGenerator, List
 from subprocess import Popen
@@ -7,14 +15,6 @@ import os
 import httpx
 import json
 import logging
-
-from mondoo.configurator import (
-    API_ENDPOINT,
-    END_FRAME,
-    get_global_config_value
-)
-
-from .manager.message_history import MsgHistoryManager
 
 
 logger = logging.getLogger(__name__)
