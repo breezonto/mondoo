@@ -17,3 +17,7 @@ Mondoo is currently a research-oriented project and may eventually evolve into t
 ## Installation 
 
 Please refers to [installation guide](./docs/installation-guide.md)
+
+## Mondoo Frontend
+
+Comming soon...
