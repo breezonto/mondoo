@@ -29,11 +29,11 @@ dependencies = [
 ]
 
 [dependency-groups]
-std = [
+standard = [
     "haystack-ai"
 ]
 
-sw = [
+ontology = [
     "rdflib",
     "networkx",
     "owlrl",
