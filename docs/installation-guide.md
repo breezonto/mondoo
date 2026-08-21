@@ -156,19 +156,3 @@ uv pip install paddlepaddle-gpu==3.2.1 -i https://www.paddlepaddle.org.cn/packag
 ```
 
 ---
-
-## Starting Services
-
-Execute the following commands in the project root directory:
-
-```bash
-python server.py start # Start all services simultaneously
-python server.py stop  # Stop all services simultaneously
-
-# Start or stop specific services
-python server.py start [agent | db | file | kbase | ocr]
-python server.py stop  [agent | db | file | kbase | ocr]
-```
-
-```
-```

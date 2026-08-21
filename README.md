@@ -16,7 +16,54 @@ Mondoo is currently a research-oriented project and may eventually evolve into t
 
 ## Installation 
 
-Please refers to [installation guide](./docs/installation-guide.md)
+For detail dependencies installation guide, please refers to [installation guide](./docs/installation-guide.md). In general, Mondoo has below dependencies in system-wide:
+
+- **Python 3.12** (other versions may works, but not guaranteed); 
+
+- **PostgreSQL**, for persistent data storage;
+    
+- **Redis**, for caching and as data structure server;
+
+- **CUDA 13.0**, optionally, if you need some features like _local deployment of base model_ and _Optical Character Recognition_ (OCR)  
+
+
+### Package Installation (from Source)
+
+For package installation from source, we use uv to manage and build it. If you haven't clone it yet:
+
+```
+git clone https://github.com/breezonto/mondoo.git
+```
+
+Inside the root directory of cloned repo, create the virtual environment:
+
+```
+uv venv .venv 
+```
+
+To Install the package dependencies, there are three group options:
+
+- **standard**: the standard version of Mondoo, including some fundamental features as retrieval system
+
+- **ontology**: powering Mondoo with ontology and semantic web, the core exploring direction in research (recommended) 
+
+- **gpu**: enable some GPU-capable features
+
+```
+# if you only pick up standard version
+uv sync --group standard
+
+# or if you only wanna try ontology
+uv sync --group ontology
+
+# also, you can freely pick options in combination way (it's also applicable to all group options)
+uv sync --group standard --group ontoloy
+```
+
+## Launch Services
+
+Please refer to [estar-instructions](estar-instructions.md)
+
 
 ## Mondoo Frontend
 
