@@ -35,12 +35,6 @@ For package installation from source, we use uv to manage and build it. If you h
 git clone https://github.com/breezonto/mondoo.git
 ```
 
-Inside the root directory of cloned repo, create the virtual environment:
-
-```
-uv venv .venv 
-```
-
 To Install the package dependencies, there are three group options:
 
 - **standard**: the standard version of Mondoo, including some fundamental features as retrieval system
