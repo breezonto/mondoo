@@ -1,11 +1,3 @@
-from mondoo.configurator import (
-    PSQL_HOST,
-    PSQL_PORT,
-    PSQL_DB,
-    PSQL_USER,
-    PSQL_PSSWD
-)
-
 from dataclasses import dataclass
 
 import os

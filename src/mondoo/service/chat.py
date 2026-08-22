@@ -1,7 +1,5 @@
-from mondoo.configurator                       import get_global_config_value, SERVER_URL, ALLOWED_IPS
-from mondoo.mdo.engine.handler                 import run_gateway
-from mondoo.mdo.engine.manager.message_history import MsgHistoryManager
-from mondoo.mdo.api.chatbot                    import SYSTEM_PROMPT_DEFAULT
+from mondoo.mdo.engine.handler   import run_gateway
+from mondoo.mdo.api.chatbot      import SYSTEM_PROMPT_DEFAULT
 from mondoo.mdo.engine.generator import (
     response_in_message_with_tool,
     stream_response_in_messages_with_tool,
@@ -28,8 +26,10 @@ import os
 
 logger = logging.getLogger(__name__)
 
-
+SERVER_URL = os.getenv('PROXY_URL', None)
 logger.info(f"Proxy URLs: {SERVER_URL}")
+
+ALLOWED_IPS = os.getenv('Allowed IPs', '127.0.0.1')
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
 
 

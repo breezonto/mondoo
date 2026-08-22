@@ -6,14 +6,16 @@ For convenience, every data entry (i.e. item) is stored as an object.
 
 """
 
-from mondoo.configurator import REDIS_HOST, REDIS_PORT, REDIS_DB
-
 from typing import Optional, Dict
 
 import redis
 import os
 import json
 
+
+REDIS_HOST = os.getenv('REDIS_HOST', None)
+REDIS_PORT = os.getenv('REDIS_PORT', None)
+REDIS_DB   = os.getenv('REDIS_DB', None)
 
 rh = redis.Redis(
     host = REDIS_HOST, 
@@ -149,7 +151,7 @@ class CacheHelper:
         @TODO comment
         """
 
-        if suffix is not '':
+        if suffix != '':
             suffix = f'@{suffix}'
         
         return _read_entry_from_cache_(
@@ -169,7 +171,7 @@ class CacheHelper:
         @TODO comment
         """
 
-        if suffix is not '':
+        if suffix != '':
             suffix = f'@{suffix}'
         
         _remove_entry_from_cache_(
@@ -188,7 +190,7 @@ class CacheHelper:
         @TODO comment
         """
 
-        if suffix is not '':
+        if suffix != '':
             suffix = f'@{suffix}'
         
         ids = rh.lrange(''.join([self._list_cache_name, '-', suffix]), 0, -1)
@@ -213,7 +215,7 @@ class CacheHelper:
         @TODO comment
         """
 
-        if suffix is not '':
+        if suffix != '':
             suffix = f'@{suffix}'
 
         _clear_all_entries_in_cache_(
