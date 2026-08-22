@@ -6,7 +6,7 @@ from mondoo.mdo.io.db.psql  import (
 from mondoo.mdo.io.db.psql_reader import PostgresReader
 from mondoo.mdo.io.db.psql_writer import PostgresWriter
 from mondoo.mdo.core.common       import setup_mcp_logging
-from mondoo.configurator          import BACKEND_BASE, DOCUMENTS_DIR
+from mondoo.configurator          import BACKEND_BASE, DOCUMENTS_DIR, FD_TABLE
 
 from mcp.server.fastmcp import FastMCP
 
@@ -20,10 +20,10 @@ config = setup_mcp_logging('librarian')
 logging.config.dictConfig(config)
 logger = logging.getLogger('mondoo.mcp.server.librarian')
 
-# Create server
+
 mcp = FastMCP('librarian')
 
-# 1. Configure connection
+
 config = PostgresConfig(
     host     = PSQL_HOST,
     port     = PSQL_PORT,
@@ -41,12 +41,12 @@ async def get_documents_list(num: int) -> str:
         Args:
             num: 获取最近上传的文档数量，默认为10，最大数量不超过20个
     """
-    reader = PostgresReader(config, is_async = True)
-    await reader.connect()
-    lines = []
     try:
+        reader = PostgresReader(config, is_async = True)
+        await reader.connect()
+        lines = []
         result = await reader.query(
-            'file_records',
+            FD_TABLE,
             page      = 1,
             page_size = num,
             order_by  = "upload_time DESC",
@@ -73,12 +73,12 @@ async def get_documents_by_keyword(keyword: str) -> str:
         Args:
             keyword: 获取最近上传的文档数量，默认为10，最大数量不超过20个
     """
-    reader = PostgresReader(config, is_async = True)
-    await reader.connect()
-    lines = []
     try:
+        reader = PostgresReader(config, is_async = True)
+        await reader.connect()
+        lines = []
         result = await reader.query(
-            'file_records',
+            FD_TABLE,
             page      = 1,
             page_size = 20,
             where='stem LIKE %s',
@@ -190,11 +190,11 @@ async def get_document_summary(title : str) -> str:
         Args:
             title: 文档标题，注意不要加文件类型后缀或者扩展后缀。
     """
-    reader = PostgresReader(config, is_async = True)
-    await reader.connect()
     try:
+        reader = PostgresReader(config, is_async = True)
+        await reader.connect()
         result = await reader.query(
-            table        = 'file_records',
+            table        = FD_TABLE,
             columns      = ['summary'],
             where        = 'stem = %s',
             where_params = (title,),
