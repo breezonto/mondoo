@@ -203,7 +203,7 @@ async def stream_response_in_messages_with_tool(
     messages   : List[dict], 
     opts       : dict,
     model_type : str,
-    history_id : Optional[str] = None,
+    context_id : Optional[str] = None,
     time_out   : int = 20
 ) -> AsyncGenerator[dict, None]:
     """
@@ -304,9 +304,9 @@ async def stream_response_in_messages_with_tool(
                     'tool_calls' : tool_calls_buffer
                 })
 
-                if history_id is not None:
+                if context_id is not None:
                     MsgHistoryManager.push_message(
-                        history_id,
+                        context_id,
                         message= { 
                             'role'       : 'assistant', 
                             'content'    : content, 
@@ -329,9 +329,9 @@ async def stream_response_in_messages_with_tool(
                         'content'      : result
                     })
 
-                    if history_id is not None:
+                    if context_id is not None:
                         MsgHistoryManager.push_message(
-                            history_id,
+                            context_id,
                             message= { 
                                 'role'         : 'tool', 
                                 'content'      : content, 
@@ -348,9 +348,9 @@ async def stream_response_in_messages_with_tool(
                     'content' : content
                 })
 
-                if history_id is not None:
+                if context_id is not None:
                     MsgHistoryManager.push_message(
-                        history_id,
+                        context_id,
                         message= { 
                             'role'    : 'assistant', 
                             'content' : content
