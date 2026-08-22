@@ -7,7 +7,7 @@ from mondoo.configurator import (
 from .manager.message_history import MsgHistoryManager
 
 from fastapi    import HTTPException
-from typing     import AsyncGenerator, List
+from typing     import AsyncGenerator, List, Optional
 from subprocess import Popen
 
 import asyncio
@@ -199,7 +199,7 @@ async def stream_response_in_messages_with_tool(
     messages   : List[dict], 
     opts       : dict,
     model_type : str,
-    history_id : str,
+    history_id : Optional[str] = None,
     time_out   : int = 20
 ) -> AsyncGenerator[dict, None]:
     """
@@ -299,15 +299,15 @@ async def stream_response_in_messages_with_tool(
                     'tool_calls' : tool_calls_buffer
                 })
 
-
-                MsgHistoryManager.push_message(
-                    history_id,
-                    message= { 
-                        'role'       : 'assistant', 
-                        'content'    : content, 
-                        'tool_calls' : tool_calls_buffer 
-                    }
-                )
+                if history_id is not None:
+                    MsgHistoryManager.push_message(
+                        history_id,
+                        message= { 
+                            'role'       : 'assistant', 
+                            'content'    : content, 
+                            'tool_calls' : tool_calls_buffer 
+                        }
+                    )
                 
                 for tool_call in tool_calls_buffer:
                     name = tool_call['function']['name']
@@ -324,14 +324,15 @@ async def stream_response_in_messages_with_tool(
                         'content'      : result
                     })
 
-                    MsgHistoryManager.push_message(
-                        history_id,
-                        message= { 
-                            'role'         : 'tool', 
-                            'content'      : content, 
-                            'tool_call_id' : tool_call['id'],
-                        }
-                    )
+                    if history_id is not None:
+                        MsgHistoryManager.push_message(
+                            history_id,
+                            message= { 
+                                'role'         : 'tool', 
+                                'content'      : content, 
+                                'tool_call_id' : tool_call['id'],
+                            }
+                        )
 
                 continue
 
@@ -341,13 +342,14 @@ async def stream_response_in_messages_with_tool(
                     'content' : content
                 })
 
-                MsgHistoryManager.push_message(
-                    history_id,
-                    message= { 
-                        'role'    : 'assistant', 
-                        'content' : content
-                    }
-                )
+                if history_id is not None:
+                    MsgHistoryManager.push_message(
+                        history_id,
+                        message= { 
+                            'role'    : 'assistant', 
+                            'content' : content
+                        }
+                    )
                 break
 
 
