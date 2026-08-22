@@ -1,9 +1,9 @@
 object_dir  : /home/guard/cache
 source_dir : /home/guard/file
 
-sock_path_4_kaleido  : /tmp/mcp_kaleido.sock'
-sock_path_4_meta     : /tmp/mcp_meta.sock
-sock_path_4_gateway  : /tmp/mcp_gateway.sock
+sock_path_4_kaleido   : /tmp/mcp_kaleido.sock
+sock_path_4_librarian : /tmp/mcp_librarian.sock
+sock_path_4_gateway   : /tmp/mcp_gateway.sock
 
 default_local_llm_path       : ./llm/qwen3-30B-instruct
 default_embedding_model_path : /home/guard/model-weights/embedding/all-MiniLM-L6-v2

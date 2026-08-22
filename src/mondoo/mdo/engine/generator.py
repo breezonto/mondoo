@@ -106,7 +106,11 @@ async def execute_tool_async(name: str, args: dict):
     """
     reader, writer = await asyncio.open_unix_connection(SOCK_PATH_4_GATEWAY)
 
-    req = { 'cmd': 'call', 'target': name, 'args': args }
+    req = { 
+        'cmd': 'call', 
+        'target': name, 
+        'args': args 
+    }
     
     writer.write((json.dumps(req) + '\n').encode())
     await writer.drain()
@@ -292,6 +296,7 @@ async def stream_response_in_messages_with_tool(
                     if finish_reason == 'tool_calls':
                         break
 
+            logger.info("TOOL BUFFER: %s", str(tool_calls_buffer))
             if tool_calls_buffer:
                 _messages.append({
                     'role'       : 'assistant',
@@ -333,6 +338,7 @@ async def stream_response_in_messages_with_tool(
                                 'tool_call_id' : tool_call['id'],
                             }
                         )
+                    logger.info(f"Execute Tool (name: {name}, params: {args}); Get Result: {result}")
 
                 continue
 

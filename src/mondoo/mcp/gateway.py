@@ -10,7 +10,7 @@ import os
 from mcp.server.fastmcp     import FastMCP
 from mcp.client.session     import ClientSession
 from mcp.client.stdio       import stdio_client, StdioServerParameters
-from mondoo.configurator    import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_META
+from mondoo.configurator    import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_LIBRARIAN
 from mondoo.mdo.core.common import setup_mcp_logging
 
 
@@ -197,13 +197,13 @@ async def startup():
     )
     logger.info("Gateway Connected to Server: Kaleido")
     
-    await gateway.connect_server('meta', 
+    await gateway.connect_server('librarian', 
         command   = [
             sys.executable,
             "-m",
             'mondoo.mcp.server.librarian'
         ],
-        sock_path = SOCK_PATH_4_META
+        sock_path = SOCK_PATH_4_LIBRARIAN
     )
     logger.info("Gateway Connected to Server: Librarian")
 

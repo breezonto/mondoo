@@ -40,9 +40,9 @@ ENV_SOURCE_DIR = os.getenv('SOURCE_DIR')
 OBJECT_DIR = assets['object_dir'] if ENV_OBJECT_DIR == '' or ENV_OBJECT_DIR is None else ENV_OBJECT_DIR
 SOURCE_DIR = assets['source_dir'] if ENV_SOURCE_DIR == '' or ENV_SOURCE_DIR is None else ENV_SOURCE_DIR
 
-SOCK_PATH_4_KALEIDO = assets['sock_path_4_kaleido']
-SOCK_PATH_4_META    = assets['sock_path_4_meta']
-SOCK_PATH_4_GATEWAY = assets['sock_path_4_gateway']
+SOCK_PATH_4_KALEIDO   = assets['sock_path_4_kaleido']
+SOCK_PATH_4_LIBRARIAN = assets['sock_path_4_librarian']
+SOCK_PATH_4_GATEWAY   = assets['sock_path_4_gateway']
 
 """
     Configurations of data storage subsystem

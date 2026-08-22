@@ -59,6 +59,7 @@ async def get_documents_list(num: int) -> str:
     
     except Exception as e:
         logger.error("\"Get Document List: %s\"", str(e))
+        return "No result\n"
     finally:
         await reader.close()
     
@@ -92,7 +93,8 @@ async def get_documents_by_keyword(keyword: str) -> str:
         logger.info("\"Successfully Get Document List: %s items\"", str(len(result.to_list())))
     
     except Exception as e:
-        logger.error("\"Get Document List: %s\"", str(e))
+        logger.error("\"Get Documents By Keyword: %s\"", str(e))
+        return "No result\n"
     finally:
         await reader.close()
     
