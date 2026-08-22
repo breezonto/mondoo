@@ -1,5 +1,5 @@
 from mondoo.mdo.io.file.generic        import *
-from ..configurator    import SOURCE_DIR, OBJECT_DIR
+from mondoo.configurator    import SOURCE_DIR, OBJECT_DIR
 from ..dbc             import init_db_client_from_default_config, get_current_dbc
 
 from datetime import datetime, timezone

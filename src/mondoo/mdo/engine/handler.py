@@ -1,6 +1,6 @@
 from mcp.client.stdio         import stdio_client, StdioServerParameters
 from mcp.client.session       import ClientSession
-from .configurator import SOCK_PATH_4_GATEWAY, END_FRAME
+from mondoo.configurator import SOCK_PATH_4_GATEWAY, END_FRAME
 from pathlib                  import Path
 
 import asyncio
@@ -102,11 +102,12 @@ async def run_gateway():
     if os.path.exists(SOCK_PATH_4_GATEWAY):
         os.remove(SOCK_PATH_4_GATEWAY)
     
-    gateway_script_path = os.path.join(Path(__file__).resolve().parent, 'mcp/gateway.py')
+    gateway_script_path = os.path.join(Path(__file__).resolve().parent, '../../mcp/gateway.py')
 
     params = StdioServerParameters(
         command = sys.executable, 
-        args    = [gateway_script_path]
+        args    = [gateway_script_path],
+        env     = os.environ.copy()
     )
     
     async with stdio_client(params) as (read, write):

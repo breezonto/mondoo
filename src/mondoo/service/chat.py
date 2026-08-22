@@ -1,4 +1,4 @@
-from mondoo.mdo.engine.configurator            import get_global_config_value
+from mondoo.configurator                       import get_global_config_value
 from mondoo.mdo.engine.handler                 import run_gateway
 from mondoo.mdo.engine.manager.message_history import MessageHistoryManger
 
@@ -42,6 +42,12 @@ logger.info(f"Proxy URLs: {SERVER_URL}")
 
 ALLOWED_IPS = set(os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1').split(','))
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
+
+
+PSQL_HOST = os.getenv('PSQL_HOST', None)
+PSQL_PORT = os.getenv('PSQL_PORT', None)
+PSQL_DB   = os.getenv('PSQL_DB', None)
+logger.info(f"PostgreSQL Connection: {PSQL_HOST}:{PSQL_PORT}@{PSQL_DB}")
 
 
 @asynccontextmanager

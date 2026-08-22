@@ -7,7 +7,7 @@ from .rr.upload import (
 from .rr.generic   import RespStatus
 from ..mdo.engine.manager.driver import FileManager
 from ..mdo.io.file.generic       import FileStage, FileRecord
-from ..mdo.engine.configurator   import get_global_config_value
+from mondoo.configurator   import get_global_config_value
 
 from pathlib               import Path
 from datetime              import datetime, timezone

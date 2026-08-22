@@ -1,4 +1,4 @@
-from ..mdo.engine.configurator import get_global_config_value
+from mondoo.configurator import get_global_config_value
 
 from typing            import Optional
 from typing_extensions import TypeAlias

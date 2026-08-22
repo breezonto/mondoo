@@ -2,7 +2,7 @@ import socket
 import json
 import mondoo.mdo.engine.mcp.gateway
 
-from mondoo.mdo.engine.configurator import SOCK_PATH_4_GATEWAY
+from mondoo.configurator import SOCK_PATH_4_GATEWAY
 
 
 def send(req):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from mondoo.mdo.core.common import (
+from mondoo.mdo.core.object.document import (
     Paragraph,
     Figure,
     BaseModelWithBody

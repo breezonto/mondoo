@@ -1,4 +1,4 @@
-from ..core.common import (
+from ..core.object.document import (
     upload_slices_to_ocr, 
     complete_upload_to_ocr,
     predict_in_structure, 

@@ -8,7 +8,7 @@ import httpx
 import json
 import logging
 
-from .configurator import (
+from mondoo.configurator import (
     API_ENDPOINT,
     END_FRAME,
     get_global_config_value
@@ -47,7 +47,7 @@ if ENABLE_LOCAL_LLM:
     start_llama_server()
 
 
-logger.info(f"Local LLM Inference is {"Enabled" if ENABLE_LOCAL_LLM else "Disabled"}")
+logger.info(f"Local LLM Inference is {'enabled' if ENABLE_LOCAL_LLM else 'disabled'}")
 
 
 """

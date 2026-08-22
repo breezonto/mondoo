@@ -1,5 +1,5 @@
 from ..io.db.psql          import get_default_psql_config
-from .configurator import LOCAL_EMBEDDING_MODEL_PATH
+from mondoo.configurator import LOCAL_EMBEDDING_MODEL_PATH
 
 from haystack.components.embedders import (
     SentenceTransformersTextEmbedder, 

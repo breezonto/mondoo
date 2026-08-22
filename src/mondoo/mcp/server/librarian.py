@@ -3,10 +3,10 @@ from mondoo.mdo.io.db.psql  import (
     PSQL_HOST, PSQL_PORT, PSQL_DB, PSQL_USER, PSQL_PSSWD
 )
 
-from mondoo.mdo.io.db.psql_reader   import PostgresReader
-from mondoo.mdo.io.db.psql_writer   import PostgresWriter
-from mondoo.mdo.core.common         import setup_mcp_logging
-from mondoo.mdo.engine.configurator import BACKEND_BASE, DOCUMENTS_DIR
+from mondoo.mdo.io.db.psql_reader import PostgresReader
+from mondoo.mdo.io.db.psql_writer import PostgresWriter
+from mondoo.mdo.core.common       import setup_mcp_logging
+from mondoo.configurator          import BACKEND_BASE, DOCUMENTS_DIR
 
 from mcp.server.fastmcp import FastMCP
 
@@ -16,12 +16,12 @@ import aiofiles
 import os
 
 
-config = setup_mcp_logging('meta')
+config = setup_mcp_logging('librarian')
 logging.config.dictConfig(config)
-logger = logging.getLogger('mdo.engine.mcp.server.meta')
+logger = logging.getLogger('mondoo.mcp.server.librarian')
 
 # Create server
-mcp = FastMCP('meta')
+mcp = FastMCP('librarian')
 
 # 1. Configure connection
 config = PostgresConfig(
@@ -144,7 +144,7 @@ async def get_document_content_chunk(query : str) -> str:
     )
 )
 
-    return f'{'-\n':20}'.join(retrieved)
+    return f"{'-'*20}\n".join(retrieved)
 
 @mcp.tool()
 async def get_document_full_content(title: str) -> str:

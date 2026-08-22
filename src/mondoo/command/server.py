@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # server.py
-from ..mdo.engine.configurator import LOGGING_YAML_PATH, get_global_config_value
+from mondoo.configurator import LOGGING_YAML_PATH, get_global_config_value
 
 from datetime import datetime
 from pathlib  import Path

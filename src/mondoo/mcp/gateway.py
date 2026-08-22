@@ -5,12 +5,13 @@ import logging
 import logging.config
 import json
 import sys
+import os
 
-from mcp.server.fastmcp       import FastMCP
-from mcp.client.session       import ClientSession
-from mcp.client.stdio         import stdio_client, StdioServerParameters
-from mondoo.mdo.engine.configurator import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_META
-from mondoo.mdo.core.common         import setup_mcp_logging
+from mcp.server.fastmcp     import FastMCP
+from mcp.client.session     import ClientSession
+from mcp.client.stdio       import stdio_client, StdioServerParameters
+from mondoo.configurator    import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_META
+from mondoo.mdo.core.common import setup_mcp_logging
 
 
 config = setup_mcp_logging('gateway')
@@ -114,8 +115,9 @@ class MCPGateway:
             args = command[1:]
 
             params = StdioServerParameters(
-                command=cmd,
-                args=args,
+                command = cmd,
+                args    = args,
+                env     = os.environ.copy()
             )
 
             async with stdio_client(params) as (read, write):
@@ -189,7 +191,7 @@ async def startup():
         command = [
             sys.executable,
             "-m",
-            'mdo.engine.mcp.server.kaleidoscope'
+            'mondoo.mcp.server.kaleidoscope'
         ],
         sock_path = SOCK_PATH_4_KALEIDO
     )
@@ -199,11 +201,11 @@ async def startup():
         command   = [
             sys.executable,
             "-m",
-            'mdo.engine.mcp.server.meta'
+            'mondoo.mcp.server.librarian'
         ],
         sock_path = SOCK_PATH_4_META
     )
-    logger.info("Gateway Connected to Server: Meta")
+    logger.info("Gateway Connected to Server: Librarian")
 
 
 @mcp.tool()
