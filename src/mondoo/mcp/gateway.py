@@ -5,6 +5,7 @@ import logging
 import logging.config
 import json
 import sys
+import os
 
 from mcp.server.fastmcp     import FastMCP
 from mcp.client.session     import ClientSession
@@ -114,8 +115,9 @@ class MCPGateway:
             args = command[1:]
 
             params = StdioServerParameters(
-                command=cmd,
-                args=args,
+                command = cmd,
+                args    = args,
+                env     = os.environ.copy()
             )
 
             async with stdio_client(params) as (read, write):
@@ -181,6 +183,11 @@ class MCPGateway:
 
 
 gateway = MCPGateway()
+
+
+
+def _capture_envs_from_parent_():
+    pass
 
 
 # lifecycle management

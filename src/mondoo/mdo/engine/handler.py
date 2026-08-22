@@ -106,7 +106,8 @@ async def run_gateway():
 
     params = StdioServerParameters(
         command = sys.executable, 
-        args    = [gateway_script_path]
+        args    = [gateway_script_path],
+        env     = os.environ.copy()
     )
     
     async with stdio_client(params) as (read, write):
