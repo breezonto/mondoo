@@ -185,11 +185,6 @@ class MCPGateway:
 gateway = MCPGateway()
 
 
-
-def _capture_envs_from_parent_():
-    pass
-
-
 # lifecycle management
 async def startup():
     await gateway.connect_server('kaleido', 
