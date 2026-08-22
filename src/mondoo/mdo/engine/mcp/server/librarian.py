@@ -16,9 +16,9 @@ import aiofiles
 import os
 
 
-config = setup_mcp_logging('meta')
+config = setup_mcp_logging('librarian')
 logging.config.dictConfig(config)
-logger = logging.getLogger('mondoo.mdo.engine.mcp.server.meta')
+logger = logging.getLogger('mondoo.mdo.engine.mcp.server.librarian')
 
 # Create server
 mcp = FastMCP('meta')

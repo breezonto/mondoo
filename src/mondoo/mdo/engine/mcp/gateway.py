@@ -199,7 +199,7 @@ async def startup():
         command   = [
             sys.executable,
             "-m",
-            'mondoo.mdo.engine.mcp.server.meta'
+            'mondoo.mdo.engine.mcp.server.librarian'
         ],
         sock_path = SOCK_PATH_4_META
     )
