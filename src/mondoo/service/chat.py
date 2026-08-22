@@ -44,6 +44,12 @@ ALLOWED_IPS = set(os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1').split(','))
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
 
 
+PSQL_HOST = os.getenv('PSQL_HOST', None)
+PSQL_PORT = os.getenv('PSQL_PORT', None)
+PSQL_DB   = os.getenv('PSQL_DB', None)
+logger.info(f"PostgreSQL Connection: {PSQL_HOST}:{PSQL_PORT}@{PSQL_DB}")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     tasks = [
