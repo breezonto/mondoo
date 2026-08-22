@@ -10,7 +10,6 @@ import time
 import math
 import requests
 import fitz
-import pdfplumber
 import yaml
 
 

@@ -17,7 +17,6 @@ dependencies = [
     "fastmcp",
     "mcp",
     "pandas",
-    "pdfplumber",
     "pymupdf",
     "python-docx",
     "python-multipart",
