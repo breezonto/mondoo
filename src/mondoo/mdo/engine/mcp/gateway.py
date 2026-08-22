@@ -6,11 +6,11 @@ import logging.config
 import json
 import sys
 
-from mcp.server.fastmcp       import FastMCP
-from mcp.client.session       import ClientSession
-from mcp.client.stdio         import stdio_client, StdioServerParameters
-from mondoo.mdo.engine.configurator import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_META
-from mondoo.mdo.core.common         import setup_mcp_logging
+from mcp.server.fastmcp     import FastMCP
+from mcp.client.session     import ClientSession
+from mcp.client.stdio       import stdio_client, StdioServerParameters
+from mondoo.configurator    import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_META
+from mondoo.mdo.core.common import setup_mcp_logging
 
 
 config = setup_mcp_logging('gateway')

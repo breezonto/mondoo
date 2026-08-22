@@ -1,4 +1,4 @@
-from mondoo.mdo.engine.configurator            import get_global_config_value
+from mondoo.configurator                       import get_global_config_value
 from mondoo.mdo.engine.handler                 import run_gateway
 from mondoo.mdo.engine.manager.message_history import MessageHistoryManger
 

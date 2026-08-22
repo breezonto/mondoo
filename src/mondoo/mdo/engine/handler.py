@@ -1,6 +1,6 @@
 from mcp.client.stdio         import stdio_client, StdioServerParameters
 from mcp.client.session       import ClientSession
-from .configurator import SOCK_PATH_4_GATEWAY, END_FRAME
+from mondoo.configurator import SOCK_PATH_4_GATEWAY, END_FRAME
 from pathlib                  import Path
 
 import asyncio

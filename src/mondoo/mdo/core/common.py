@@ -1,4 +1,4 @@
-from mondoo.mdo.engine.configurator import BACKEND_BASE, MCP_LOGGING_YAML_PATH
+from mondoo.configurator import BACKEND_BASE, MCP_LOGGING_YAML_PATH
 
 from datetime import datetime
 from os       import PathLike

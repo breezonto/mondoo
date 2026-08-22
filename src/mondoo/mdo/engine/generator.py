@@ -8,7 +8,7 @@ import httpx
 import json
 import logging
 
-from .configurator import (
+from mondoo.configurator import (
     API_ENDPOINT,
     END_FRAME,
     get_global_config_value

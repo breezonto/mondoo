@@ -4,9 +4,9 @@ import requests
 import httpx
 import datetime
 
-from mcp.server.fastmcp       import FastMCP
-from mondoo.mdo.engine.configurator import (AMAP_URI, AMAP_KEY)
-from mondoo.mdo.core.common         import setup_mcp_logging
+from mcp.server.fastmcp     import FastMCP
+from mondoo.configurator    import (AMAP_URI, AMAP_KEY)
+from mondoo.mdo.core.common import setup_mcp_logging
 
 config = setup_mcp_logging('kaleido')
 logging.config.dictConfig(config)

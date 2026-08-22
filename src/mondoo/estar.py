@@ -1,4 +1,4 @@
-from .configurator import load_yaml_config, set_global_config_value
+from mondoo.configurator import load_yaml_config, set_global_config_value
 
 from os       import PathLike
 from argparse import _SubParsersAction, ArgumentParser
@@ -228,7 +228,7 @@ def build_command_config_subparser(subparsers : _SubParsersAction):
 
 def command_config(args):
     import shutil
-    from .mdo.engine.configurator import get_configuration_file_path
+    from mondoo.configurator import get_configuration_file_path
     if args.dump is not None:
         select = args.dump
         config_path = get_configuration_file_path(select)
