@@ -47,7 +47,7 @@ if ENABLE_LOCAL_LLM:
     start_llama_server()
 
 
-logger.info(f"Local LLM Inference is {"Enabled" if ENABLE_LOCAL_LLM else "Disabled"}")
+logger.info(f"Local LLM Inference is {'enabled' if ENABLE_LOCAL_LLM else 'disabled'}")
 
 
 """

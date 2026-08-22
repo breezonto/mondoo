@@ -144,7 +144,7 @@ async def get_document_content_chunk(query : str) -> str:
     )
 )
 
-    return f'{'-\n':20}'.join(retrieved)
+    return f"{'-'*20}\n".join(retrieved)
 
 @mcp.tool()
 async def get_document_full_content(title: str) -> str:
