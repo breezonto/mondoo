@@ -18,10 +18,10 @@ import os
 
 config = setup_mcp_logging('librarian')
 logging.config.dictConfig(config)
-logger = logging.getLogger('mondoo.mdo.engine.mcp.server.librarian')
+logger = logging.getLogger('mondoo.mcp.server.librarian')
 
 # Create server
-mcp = FastMCP('meta')
+mcp = FastMCP('librarian')
 
 # 1. Configure connection
 config = PostgresConfig(

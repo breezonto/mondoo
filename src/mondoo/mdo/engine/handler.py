@@ -102,7 +102,7 @@ async def run_gateway():
     if os.path.exists(SOCK_PATH_4_GATEWAY):
         os.remove(SOCK_PATH_4_GATEWAY)
     
-    gateway_script_path = os.path.join(Path(__file__).resolve().parent, 'mcp/gateway.py')
+    gateway_script_path = os.path.join(Path(__file__).resolve().parent, '../../mcp/gateway.py')
 
     params = StdioServerParameters(
         command = sys.executable, 

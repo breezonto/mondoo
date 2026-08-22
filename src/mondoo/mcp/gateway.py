@@ -189,7 +189,7 @@ async def startup():
         command = [
             sys.executable,
             "-m",
-            'mondoo.mdo.engine.mcp.server.kaleidoscope'
+            'mondoo.mcp.server.kaleidoscope'
         ],
         sock_path = SOCK_PATH_4_KALEIDO
     )
@@ -199,11 +199,11 @@ async def startup():
         command   = [
             sys.executable,
             "-m",
-            'mondoo.mdo.engine.mcp.server.librarian'
+            'mondoo.mcp.server.librarian'
         ],
         sock_path = SOCK_PATH_4_META
     )
-    logger.info("Gateway Connected to Server: Meta")
+    logger.info("Gateway Connected to Server: Librarian")
 
 
 @mcp.tool()
