@@ -1,10 +1,9 @@
-from mondoo.configurator                       import get_global_config_value
-from mondoo.mdo.engine.handler                 import run_gateway
-from mondoo.mdo.engine.manager.message_history import MessageHistoryManger
-
+from mondoo.mdo.engine.handler   import run_gateway
+from mondoo.mdo.api.chatbot      import SYSTEM_PROMPT_DEFAULT
 from mondoo.mdo.engine.generator import (
     response_in_message_with_tool,
-    stream_response_in_messages_with_tool
+    stream_response_in_messages_with_tool,
+    query_message_history
 )
 
 from mondoo.service.rr.chat import (
@@ -27,20 +26,10 @@ import os
 
 logger = logging.getLogger(__name__)
 
-
-path = Path('mdo/literate/role/default.md')
-if path.exists():
-    with open(path, "r", encoding="utf-8") as f:
-        SYSTEM_PROMPT_DEFAULT = f.read()
-else:
-    SYSTEM_PROMPT_DEFAULT = "You are an helpful assistant"
-
-
-SERVER_URL = set(os.getenv('PROXY_URL', '127.0.0.1').split(','))
+SERVER_URL = os.getenv('PROXY_URL', None)
 logger.info(f"Proxy URLs: {SERVER_URL}")
 
-
-ALLOWED_IPS = set(os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1').split(','))
+ALLOWED_IPS = os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1')
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
 
 
@@ -105,8 +94,16 @@ async def chat_completion(req: ReqChatCompletion):
     stream_gen = None
     resp       = None
     elapsed    = 0.0
-    
-    messages = req.messages
+
+    if len(req.messages) < 1: # messages is empty
+        HTTPException(status_code=422, detail="messages should not be empty!")
+
+    if req.memory_id is not None:
+        messages = await query_message_history(req.memory_id)
+        messages.append(req.messages)
+    else:
+        messages = req.messages
+
     if messages[0].role != Role.SYSTEM:
         message = Message(
             role    = Role.SYSTEM,
@@ -177,4 +174,4 @@ async def chat_completion(req: ReqChatCompletion):
 
 @app.get('/api/v1/chat/{history_id}')
 def get_message_history(history_id : str):
-    return MessageHistoryManger.query_messages(history_id)
+    return query_message_history(history_id)

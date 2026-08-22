@@ -1,13 +1,13 @@
-from mondoo.mdo.io.file.generic        import *
-from mondoo.configurator    import SOURCE_DIR, OBJECT_DIR
-from ..dbc             import init_db_client_from_default_config, get_current_dbc
+from ..dbc import init_db_client_from_default_config, get_current_dbc
+
+from mondoo.mdo.io.file.generic import *
+from mondoo.mdo.io.db.cache     import *
+from mondoo.configurator import SOURCE_DIR, OBJECT_DIR, FD_TABLE
 
 from datetime import datetime, timezone
 from os       import PathLike
 from pathlib  import Path
 from typing   import List
-
-from mondoo.mdo.io.db.redis import *
 
 import os
 import json
@@ -15,7 +15,9 @@ import threading
 import logging
 import uuid
 
+
 logger = logging.getLogger(__name__)
+
 
 class classproperty:
     def __init__(self, fget):
@@ -31,16 +33,25 @@ file_task_lock = threading.Lock()
 init_db_client_from_default_config()
 
 
-class FileManager: 
+class FDManager:
+    """
+    FDManager for archiving and parsing the file.
+    """ 
+
     _registry        = {}
     _default_object_dir      = OBJECT_DIR
     _default_source_file_dir = SOURCE_DIR
-    _default_file_table_name = 'file_records'
-    _file_record_cache_name  = 'file_record_cache'
-    _cache_client = CacheWrapper(_file_record_cache_name)
+    _default_file_table_name = FD_TABLE
+
+    _cache_name   = FD_TABLE + '_cache'
+    _cache_client = CacheHelper(_cache_name)
 
     @classmethod
     def register(cls, *extensions):
+        """
+        register all supported extension for parsing
+        """
+
         def decorator(reader_cls):
             for ext in extensions:
                 cls._registry[ext.lower()] = reader_cls
@@ -48,49 +59,61 @@ class FileManager:
         return decorator
     
     def __init__(self):
+        """
+        @TODO comment
+        """
+
         pass
     
     @classmethod
-    def open(
+    def parse(
         cls, 
         path       : PathLike[str],
         meth_names : List[str],
         file_id    : str = None,
         **kwargs
     ):
-      path_obj = Path(path)
-      if not path_obj.exists():
-          raise ValueError(f"Path {path} doesn't exist")
-      
-      if path_obj.is_file():
-        ext  = path_obj.suffix.split('.')[-1]
-        reader_cls = cls._get_reader_(ext)
+        """
+        @TODO comment
+        """
+
+        path_obj = Path(path)
+        if not path_obj.exists():
+            raise ValueError(f"Path {path} doesn't exist")
         
-        descriptor = reader_cls.set_descriptor(
-            path       = path,
-            cache_path = None,
-            file_id    = file_id
-        )
+        if path_obj.is_file():
+            ext  = path_obj.suffix.split('.')[-1]
+            reader_cls = cls._get_reader_(ext)
+            
+            descriptor = reader_cls.set_descriptor(
+                path       = path,
+                cache_path = None,
+                file_id    = file_id
+            )
+            
+            obj = reader_cls.read(
+                path              = path,
+                meth_names        = meth_names, # meth_names
+                intermediate_path = None,
+                descriptor        = descriptor,
+                **kwargs
+            )
+            
+            return [obj]
         
-        obj = reader_cls.read(
-            path              = path,
-            meth_names        = meth_names, # meth_names
-            intermediate_path = None,
-            descriptor        = descriptor,
-            **kwargs
-        )
-        
-        return [obj]
-        
-      elif path_obj.is_dir():
-          pass
+        elif path_obj.is_dir():
+            pass
     
     @classmethod
-    def record(
+    def archive(
         cls,
         file_id : str,
-        record     : FileRecord 
+        record  : FileRecord 
     ):  
+        """
+        @TODO comment
+        """
+
         db = get_current_dbc(is_async=False)
 
         if record.curr_slice == 0:
@@ -142,15 +165,19 @@ class FileManager:
         record_obj = record.model_dump()
         record_obj['complete_upload_time'] = record_time_str
         # write_data_to_redis(record_obj)
-        cls._cache_client.write_data(record_obj, id_field='file_id')
+        cls._cache_client.write_item(record_obj, id_field='file_id')
 
     
     @classmethod
-    async def record_async(
+    async def archive_in_async(
         cls,
         file_id : str,
         record  : FileRecord 
     ):  
+        """
+        @TODO comment
+        """
+
         db = get_current_dbc(is_async=True)
 
         if record.curr_slice == 0:
@@ -204,12 +231,16 @@ class FileManager:
         record_obj = record.model_dump()
         record_obj['complete_upload_time'] = record_time_str
         # write_data_to_redis(record_obj)
-        cls._cache_client.write_data(record_obj, id_field='file_id')
+        cls._cache_client.write_item(record_obj, id_field='file_id')
 
     @classmethod
-    def remove(cls, file_id):
+    def erase(cls, file_id):
+        """
+        @TODO comment
+        """
+
         # remove_file_record(file_id)
-        cls._cache_client.remove_record(file_id)
+        cls._cache_client.remove_item(file_id)
         try:
             db = get_current_dbc(is_async=False)
             
@@ -223,9 +254,13 @@ class FileManager:
 
     
     @classmethod
-    async def remove_async(cls, file_id):
+    async def erase_in_async(cls, file_id):
+        """
+        @TODO comment
+        """
+
         # remove_file_record(file_id)
-        cls._cache_client.remove_record(file_id)
+        cls._cache_client.remove_item(file_id)
         try:
             db = get_current_dbc(is_async=True)
             # NOTE: await
@@ -239,11 +274,15 @@ class FileManager:
 
 
     @classmethod
-    def get(
+    def query(
         cls,
         file_id : str
     ) -> FileRecord:
-        data = cls._cache_client.read_record(file_id)
+        """
+        @TODO comment
+        """
+
+        data = cls._cache_client.read_item(file_id)
         if data:
             descriptor = FileDesc(
                 file_id     = data['file_id'],
@@ -265,8 +304,12 @@ class FileManager:
         return None
     
     @classmethod
-    def get_all(cls) -> List[FileRecord]:
-        rows = cls._cache_client.read_all_data()
+    def query_all(cls) -> List[FileRecord]:
+        """
+        @TODO comment
+        """
+
+        rows = cls._cache_client.read_all_items()
         records = []
         for row in rows:
             data = row
@@ -291,8 +334,12 @@ class FileManager:
         return records
     
     @classmethod
-    def clean_all(cls):
-        cls._cache_client.clear_all_data(
+    def erase_all(cls):
+        """
+        @TODO comment
+        """
+                
+        cls._cache_client.clear_all_items(
             cls._cache_client.list_name,
             cls._cache_client.hash_name,
             cls._cache_client.set_name,
@@ -303,9 +350,14 @@ class FileManager:
         cls,
         obj
     ) -> PathLike[str]:
-        ext                        = obj.descriptor.ext
-        reader_cls                 = cls._get_reader_(ext)
-        target_path                = os.path.join(cls._default_object_dir, obj.descriptor.stem)
+        """
+        dump the file content to JSON object file
+        """
+
+        ext         = obj.descriptor.ext
+        reader_cls  = cls._get_reader_(ext)
+        target_path = os.path.join(cls._default_object_dir, obj.descriptor.stem)
+
         obj.descriptor.target_path = target_path
         reader_cls.dump(obj.body, target_path)
         return target_path
@@ -315,22 +367,35 @@ class FileManager:
         cls,
         obj
     ) -> tuple[PathLike[str], int, dict]:
-        ext                        = obj.descriptor.ext
-        reader_cls                 = cls._get_reader_(ext)
-        target_path                = os.path.join(cls._default_object_dir, obj.descriptor.stem)
+        """
+        export the file content to markdown file
+        """
+
+        ext         = obj.descriptor.ext
+        reader_cls  = cls._get_reader_(ext)
+        target_path = os.path.join(cls._default_object_dir, obj.descriptor.stem)
+
         obj.descriptor.target_path = target_path
         num_chunks, ret_obj = reader_cls.export(obj.body, obj.descriptor, target_path)
         return target_path, num_chunks, ret_obj
     
     @classmethod
     def get_available_methods(cls, ext : str):
+        """
+        @TODO comment
+        """
+
         reader_cls = cls._get_reader_(ext)
         return reader_cls.methods
     
     
     @classproperty
     def context(cls) -> str:
-        records = cls.get_all()
+        """
+        @TODO comment
+        """
+
+        records = cls.query_all()
         views = [record.user_view for record in records]
 
         prompt = f"""
@@ -354,6 +419,10 @@ class FileManager:
     
     @classmethod
     def _get_reader_(cls, ext: str):
+        """
+        @TODO comment
+        """
+
         try:
             return cls._registry[ext.lower()]
         except KeyError:
@@ -362,19 +431,31 @@ class FileManager:
     
     @classproperty
     def registry(cls):
+        """
+        @TODO comment
+        """
+
         return cls._registry.keys()
        
     @classproperty
     def object_dir(cls):
+        """
+        @TODO comment
+        """
+
         return cls._default_object_dir
     
     @classproperty
     def source_dir(cls):
+        """
+        @TODO comment
+        """
+
         return cls._default_source_file_dir
         
 
-logger.info("\"The Object Directory [%s]\"", FileManager.object_dir)
-logger.info("\"The Source Directory [%s]\"", FileManager.source_dir)
+logger.info("\"The Object Directory [%s]\"", FDManager.object_dir)
+logger.info("\"The Source Directory [%s]\"", FDManager.source_dir)
 
 
 from mondoo.mdo.io.reader import *

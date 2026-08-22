@@ -1,4 +1,5 @@
-from mondoo.configurator import get_global_config_value
+from mondoo.configurator import SERVER_URL, ALLOWED_IPS
+
 from .rr.ocr          import *
 
 from fastapi  import FastAPI, HTTPException, Request
@@ -11,11 +12,7 @@ import os
 logger = logging.getLogger(__name__)
 
 
-SERVER_URL = set(os.getenv('PROXY_URL', '127.0.0.1').split(','))
 logger.info(f"Proxy URLs: {SERVER_URL}")
-
-
-ALLOWED_IPS = set(os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1').split(','))
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
 
 

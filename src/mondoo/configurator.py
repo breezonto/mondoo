@@ -40,9 +40,9 @@ ENV_SOURCE_DIR = os.getenv('SOURCE_DIR')
 OBJECT_DIR = assets['object_dir'] if ENV_OBJECT_DIR == '' or ENV_OBJECT_DIR is None else ENV_OBJECT_DIR
 SOURCE_DIR = assets['source_dir'] if ENV_SOURCE_DIR == '' or ENV_SOURCE_DIR is None else ENV_SOURCE_DIR
 
-SOCK_PATH_4_KALEIDO = assets['sock_path_4_kaleido']
-SOCK_PATH_4_META    = assets['sock_path_4_meta']
-SOCK_PATH_4_GATEWAY = assets['sock_path_4_gateway']
+SOCK_PATH_4_KALEIDO   = assets['sock_path_4_kaleido']
+SOCK_PATH_4_LIBRARIAN = assets['sock_path_4_librarian']
+SOCK_PATH_4_GATEWAY   = assets['sock_path_4_gateway']
 
 """
     Configurations of data storage subsystem
@@ -97,6 +97,14 @@ config_file_path = {
     'service' : SERVICE_YAML_PATH,
     'storage' : STORAGE_YAML_PATH
 }
+
+
+"""
+    Data Storage
+"""
+
+FD_TABLE   = os.getenv('FD_TABLE', 'file_records')
+MSG_TABLE  = os.getenv('MSG_TABLE', 'message_history')
 
 
 def get_configuration_file_path(names : Optional[List[str]] = None):

@@ -1,60 +1,82 @@
-from mondoo.mdo.io.db.redis import *
-from typing           import List
+from mondoo.mdo.io.db.cache import *
+
+from typing import List
 
 import uuid
 
-class MessageHistoryManger:
-    _message_cache_name = 'message_history'
-    _cache_client       = CacheWrapper(_message_cache_name)
+
+class MsgHistoryManager:
+    """
+    @TODO comment
+    """
+
+    _cache_name   = 'message-history'
+    _cache_client = CacheHelper(_cache_name)
 
     def push_message(
         self,
-        message_history_id : str,
-        message            : dict
+        history_id : str,
+        message    : dict
     ):
-        record = {
-            "message_id" : str(uuid.uuid4()),
-            "role"       : message.role,
-            "content"    : message.content
-        }
+        """
+        @TODO comment
+        """
+            
+        _message = message.copy()
 
-        self._cache_client.write_data(
-            record,
-            id_field = "message_id",
-            suffix = message_history_id
+        # @TODO message id should be timestamp encoded serial number
+        # for convenience, temporally set it as random number
+
+        _message['id'] = str(uuid.uuid4())
+
+        self._cache_client.write_item(
+            _message,
+            id_field = 'id',
+            suffix = history_id
         )
 
 
     def query_messages(
         self,
-        message_history_id: str
+        history_id: str
     ) -> List[Dict]:
+        """
+        @TODO comment
+        """
 
-        records = self._cache_client.read_all_data(message_history_id)
+        messages = self._cache_client.read_all_items(history_id)
 
-        return records
+        return messages
 
 
     def delete_first_n_messages(
         self,
-        message_history_id: str,
+        history_id: str,
         n: int
     ):
-        messages = self.query_messages(message_history_id)
+        """
+        @TODO comment
+        """
+
+        messages = self.query_messages(history_id)
 
         # Delete the first n messages
         for msg in messages[:n]:
-            message_id = msg.get("message_id")
+            message_id = msg.get('id')
 
             if message_id:
-                self._cache_client.remove_record(
+                self._cache_client.remove_item(
                     message_id,
-                    suffix=message_history_id
+                    suffix=history_id
                 )
 
 
     def clear_messages(
         self,
-        message_history_id: str
+        history_id: str
     ):
-        self._cache_client.clear_all_data(message_history_id)
+        """
+        @TODO comment
+        """
+
+        self._cache_client.clear_all_items(history_id)

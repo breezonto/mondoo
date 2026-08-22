@@ -100,8 +100,8 @@ class _SyncPostgresReaderImpl(PostgresReader):
             )
             logger.info("✅ Connection pool established [%s:%d/%s]", self.config.host, self.config.port, self.config.database)
         except psycopg2.Error as e:
-            logger.error("❌ Connection failed: %s", e)
-            raise
+            logger.error("❌ Connection failed: %s", str(e))
+            raise RuntimeError(f"{str(e)}")
 
     def close(self) -> None:
         if self._pool:
@@ -265,11 +265,12 @@ class _AsyncPostgresReaderImpl(PostgresReader):
                 minsize=self.config.min_connections, maxsize=self.config.max_connections,
                 host=self.config.host, port=self.config.port, dbname=self.config.database,
                 user=self.config.user, password=self.config.password,
+                timeout=2.0 # temporally set to 2.0s as timeout
             )
             logger.info("✅ Connection pool established [%s:%d/%s]", self.config.host, self.config.port, self.config.database)
         except Exception as e:
-            logger.error("❌ Connection failed: %s", e)
-            raise
+            logger.error("❌ Connection failed: %s", str(e))
+            raise RuntimeError(f"{str(e)}")
 
     async def close(self) -> None:
         if self._pool:

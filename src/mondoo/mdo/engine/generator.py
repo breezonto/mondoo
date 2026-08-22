@@ -1,5 +1,13 @@
+from mondoo.configurator import (
+    API_ENDPOINT,
+    END_FRAME,
+    get_global_config_value
+)
+
+from .manager.message_history import MsgHistoryManager
+
 from fastapi    import HTTPException
-from typing     import AsyncGenerator, List
+from typing     import AsyncGenerator, List, Optional
 from subprocess import Popen
 
 import asyncio
@@ -8,11 +16,6 @@ import httpx
 import json
 import logging
 
-from mondoo.configurator import (
-    API_ENDPOINT,
-    END_FRAME,
-    get_global_config_value
-)
 
 logger = logging.getLogger(__name__)
 
@@ -50,11 +53,11 @@ if ENABLE_LOCAL_LLM:
 logger.info(f"Local LLM Inference is {'enabled' if ENABLE_LOCAL_LLM else 'disabled'}")
 
 
-"""
-@TODO comment
-"""
-
 def _convert_2_deepseek_tool_spec_(desc):
+    """
+    @TODO comment
+    """
+
     result = []
     for t in desc['tools']:
         result.append({
@@ -69,11 +72,11 @@ def _convert_2_deepseek_tool_spec_(desc):
     return result
 
 
-"""
-@TODO comment
-"""
-
 async def _get_all_available_tools_():
+    """
+    @TODO comment
+    """
+
     reader, writer = await asyncio.open_unix_connection(SOCK_PATH_4_GATEWAY)
     req = { 'cmd': 'list_tools', 'args': None }
     writer.write((json.dumps(req) + '\n').encode())
@@ -96,14 +99,18 @@ async def _get_all_available_tools_():
             return _convert_2_deepseek_tool_spec_(tools)    
         
 
-"""
-@TODO comment
-"""
 
 async def execute_tool_async(name: str, args: dict):
+    """
+    @TODO comment
+    """
     reader, writer = await asyncio.open_unix_connection(SOCK_PATH_4_GATEWAY)
 
-    req = { 'cmd': 'call', 'target': name, 'args': args }
+    req = { 
+        'cmd': 'call', 
+        'target': name, 
+        'args': args 
+    }
     
     writer.write((json.dumps(req) + '\n').encode())
     await writer.drain()
@@ -123,16 +130,16 @@ async def execute_tool_async(name: str, args: dict):
             return json.loads(line)
 
 
-"""
-@TODO comment
-"""
-
 async def response_in_message_with_tool(
     messages   : List[dict], 
     opts       : dict, 
     model_type : str,
     time_out   : int = 200
 ) -> str:
+    """
+    @TODO comment
+    """
+
     API_KEY = None
     headers = dict()
 
@@ -196,11 +203,17 @@ async def stream_response_in_messages_with_tool(
     messages   : List[dict], 
     opts       : dict,
     model_type : str,
+    history_id : Optional[str] = None,
     time_out   : int = 20
 ) -> AsyncGenerator[dict, None]:
+    """
+    @TODO comment
+    """
 
     API_KEY = None
     headers = {}
+
+    _messages = messages.copy()
 
     if model_type == 'remote':
         api_url = API_ENDPOINT['remote']
@@ -218,7 +231,7 @@ async def stream_response_in_messages_with_tool(
         while True:
             payload = {
                 'model'       : 'deepseek-chat' if model_type == 'remote' else 'local-chat-model',
-                'messages'    : messages,
+                'messages'    : _messages,
                 'tools'       : await _get_all_available_tools_(),
                 'max_tokens'  : opts['max_tokens'],
                 'temperature' : opts['temperature'],
@@ -283,13 +296,24 @@ async def stream_response_in_messages_with_tool(
                     if finish_reason == 'tool_calls':
                         break
 
+            logger.info("TOOL BUFFER: %s", str(tool_calls_buffer))
             if tool_calls_buffer:
-                messages.append({
+                _messages.append({
                     'role'       : 'assistant',
                     'content'    : content,
                     'tool_calls' : tool_calls_buffer
                 })
 
+                if history_id is not None:
+                    MsgHistoryManager.push_message(
+                        history_id,
+                        message= { 
+                            'role'       : 'assistant', 
+                            'content'    : content, 
+                            'tool_calls' : tool_calls_buffer 
+                        }
+                    )
+                
                 for tool_call in tool_calls_buffer:
                     name = tool_call['function']['name']
                     args = tool_call['function']['arguments']
@@ -299,21 +323,46 @@ async def stream_response_in_messages_with_tool(
 
                     result = await execute_tool_async(name, args)
 
-                    messages.append({
+                    _messages.append({
                         'role'         : 'tool',
                         'tool_call_id' : tool_call['id'],
                         'content'      : result
                     })
 
+                    if history_id is not None:
+                        MsgHistoryManager.push_message(
+                            history_id,
+                            message= { 
+                                'role'         : 'tool', 
+                                'content'      : content, 
+                                'tool_call_id' : tool_call['id'],
+                            }
+                        )
+                    logger.info(f"Execute Tool (name: {name}, params: {args}); Get Result: {result}")
+
                 continue
 
             else:
-                messages.append({
+                _messages.append({
                     'role'    : 'assistant',
                     'content' : content
                 })
+
+                if history_id is not None:
+                    MsgHistoryManager.push_message(
+                        history_id,
+                        message= { 
+                            'role'    : 'assistant', 
+                            'content' : content
+                        }
+                    )
                 break
 
 
-async def get_message_history():
-    pass
+
+async def query_message_history(history_id : str):
+    """
+    @TODO comment
+    """
+
+    return MsgHistoryManager.query_messages(history_id)

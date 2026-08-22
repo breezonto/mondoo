@@ -1,12 +1,12 @@
-from mondoo.configurator import get_global_config_value
-from ..mdo.engine.dbc    import get_current_async_dbc
+from mondoo.configurator   import SERVER_URL, ALLOWED_IPS
+from mondoo.mdo.engine.dbc import get_current_async_dbc
+
 from .rr.vkbase       import *   
 from .rr.generic      import RespStatus
 
 from fastapi import FastAPI, Form, HTTPException, Request, File, UploadFile
 from fastapi import Query
 
-# import mdo.engine.kbase as K
 import mondoo.mdo.api.knowledge as IK
 
 import logging
@@ -15,17 +15,13 @@ import os
 logger = logging.getLogger(__name__)
 
 
-SERVER_URL = set(os.getenv('PROXY_URL', '127.0.0.1').split(','))
 logger.info(f"Proxy URLs: {SERVER_URL}")
-
-
-ALLOWED_IPS = set(os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1').split(','))
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
 
 
 app = FastAPI(
-    title       = "Knowledge Base Service",
-    servers     = [
+    title   = "Knowledge Base Service",
+    servers = [
         { 
             'url': SERVER_URL, 
             'description': "Nginx reverse proxy path" 
@@ -52,6 +48,11 @@ async def ip_filter_middleware(request: Request, call_next):
 
 @app.post('/api/v1/store', response_model=RespStore)
 async def store(req: ReqStore):
+    """
+    @TODO change the API to satisfiy RESTful style
+    i.e. @app.post('/api/v1/documents/{doc_id}')
+    """
+
     file_id   = req.file_id
     file_name = req.file_name
     file_type = req.file_type
@@ -81,39 +82,19 @@ async def store(req: ReqStore):
 
 @app.post('/api/v1/remove', response_model=RespRemove)
 async def remove(req: ReqRemove):
+    """
+    @TODO change the API to satisfiy RESTful style
+    i.e. @app.delete('/api/v1/documents/{doc_id}')
+    """
+
     file_id      = req.file_id
     total_chunks = req.total_chunks
-    # doc_ids      = [f'{file_id}-{i}' for i in range(total_chunks)]
 
     IK.erase_excerpts_from_kb(file_id=file_id, total_excerpts=total_chunks)
-    # K.remove_excerpts_from_kb(doc_ids=doc_ids)
 
     return RespRemove(
         status  = RespStatus.OK,
         message = f"chunks of [id = {file_id}] removed successfully."
-    )
-
-
-@app.post('/api/v1/retrieve', response_model=RespRetrieve)
-async def retrieve_documents(req: ReqRetrieve):
-    retrieved = IK.recall_k_excerpts(req.query, req.top_k)
-    results = []
-    
-    for doc in retrieved:
-        results.append(
-            RetrievedDocument(
-                id      = doc.id,
-                score   = doc.score,
-                source  = doc.meta.get('title'),
-                page    = doc.meta.get('page_idx'),
-                count   = doc.meta.get('count'),
-                excerpt = doc.content.replace('\t\t', "")
-            )
-        )
-    logger.info("Retrieved %d documents for query: %s", len(results), req.query)
-    return RespRetrieve(
-        query   = req.query,
-        results = results
     )
     
     
@@ -122,6 +103,11 @@ async def retrieve_documents(
     q: str = Query(..., description = "User query text"),
     k: int = Query(3, description   = "Number of documents to retrieve")
 ):
+    """
+    @TODO change the API to satisfiy RESTful style
+    i.e. @app.get('/api/v1/documents/search?q={query}')
+    """
+
     retrieved = IK.recall_k_excerpts(q, k)
 
     results = []

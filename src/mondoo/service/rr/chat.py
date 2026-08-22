@@ -3,6 +3,11 @@ from typing   import List, Dict, Optional, Literal
 from enum     import Enum
 
 
+class ModelType(str, Enum):
+    LOCAL     = 'local'
+    REMOTE    = 'remote'
+
+
 class Role(str, Enum):
     SYSTEM    = 'system'
     USER      = 'user'
@@ -62,7 +67,7 @@ class ReqChatCompletion(BaseModel):
     """
     model_type : Literal['local', 'remote']
     messages   : List[Message]
-    memory_id  : Optional[str]            = Field("", description="Should incetive the internal memory?")
+    memory_id  : Optional[str]            = Field(None, description="Should incetive the internal memory?")
     options    : Optional[ReqChatOptions] = ReqChatOptions()
     
           
