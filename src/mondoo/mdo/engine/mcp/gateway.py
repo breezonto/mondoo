@@ -189,7 +189,7 @@ async def startup():
         command = [
             sys.executable,
             "-m",
-            'mdo.engine.mcp.server.kaleidoscope'
+            'mondoo.mdo.engine.mcp.server.kaleidoscope'
         ],
         sock_path = SOCK_PATH_4_KALEIDO
     )
@@ -199,7 +199,7 @@ async def startup():
         command   = [
             sys.executable,
             "-m",
-            'mdo.engine.mcp.server.meta'
+            'mondoo.mdo.engine.mcp.server.meta'
         ],
         sock_path = SOCK_PATH_4_META
     )

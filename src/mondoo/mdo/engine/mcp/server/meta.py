@@ -18,7 +18,7 @@ import os
 
 config = setup_mcp_logging('meta')
 logging.config.dictConfig(config)
-logger = logging.getLogger('mdo.engine.mcp.server.meta')
+logger = logging.getLogger('mondoo.mdo.engine.mcp.server.meta')
 
 # Create server
 mcp = FastMCP('meta')

@@ -10,7 +10,7 @@ from mondoo.mdo.core.common import setup_mcp_logging
 
 config = setup_mcp_logging('kaleido')
 logging.config.dictConfig(config)
-logger = logging.getLogger('mdo.engine.mcp.server.kaleidoscope')
+logger = logging.getLogger('mondoo.mdo.engine.mcp.server.kaleidoscope')
 
 # Create server
 mcp = FastMCP('kaleido')
