@@ -8,9 +8,6 @@ PSQL_DB    = list(set(os.getenv('PSQL_DB').split(',')))
 PSQL_USER  = os.getenv('PSQL_USER')
 PSQL_PSSWD = os.getenv('PSQL_PWSD')
 
-# PSQL_DB    = 'fd_meta'
-# PSQL_USER  = 'ubuntu'
-# PSQL_PSSWD = 'G.20260325'
 
 @dataclass
 class PostgresConfig:
