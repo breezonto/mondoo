@@ -1,5 +1,5 @@
 .vscode/
-mondoo_ai*
+mondoo_engine.egg-info*
 
 logs/
 
