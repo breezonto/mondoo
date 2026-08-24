@@ -1,4 +1,4 @@
-from mondoo.mdo.io.file.pdf import convert_pdf_to_images
+from mondoo.mdo.io.parser.pdf import convert_pdf_to_images
 
 
 if __name__ == '__main__':

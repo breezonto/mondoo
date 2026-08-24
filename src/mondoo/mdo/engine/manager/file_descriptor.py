@@ -1,6 +1,6 @@
 from ..dbc import init_db_client_from_default_config, get_current_dbc
 
-from mondoo.mdo.io.file.generic import *
+from mondoo.mdo.io.parser.generic import *
 from mondoo.mdo.io.db.cache     import *
 from mondoo.configurator import SOURCE_DIR, OBJECT_DIR, FD_TABLE
 
@@ -35,7 +35,7 @@ init_db_client_from_default_config()
 
 class FDManager:
     """
-    FDManager for archiving and parsing the file.
+    FDManager for archiving and parsing the parser.
     """ 
 
     _registry        = {}

@@ -5,18 +5,18 @@ from ..core.object.document import (
     group_image_detection_to_passages_json
 )
 
-from .file.doc import ( 
+from .parser.doc import ( 
     DOCXObject, Body as DOCXBody,
     extract_docx_body, 
     dump_docx_body_to_md,
 )
 
-from .file.picture import ( 
+from .parser.picture import ( 
     ImageObject, Body as ImageBody,
     dump_image_body_to_md
 )
 
-from .file.pdf import (
+from .parser.pdf import (
     Paragraph, PDFObject, Body as PDFBody,
     extarct_pdf_body, dump_pdf_body_to_md, count_pages,
     group_paragraphs_to_chunks
@@ -24,7 +24,7 @@ from .file.pdf import (
 
 from ..utils.warn      import WarnNotImplemented
 from ..engine.manager.file_descriptor   import FDManager
-from ..io.file.generic import FileDesc
+from ..io.parser.generic import FileDesc
 
 from os      import PathLike
 from pathlib import Path
