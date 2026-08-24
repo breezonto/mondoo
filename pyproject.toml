@@ -3,9 +3,9 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mondoo-ai"
+name = "mondoo-engine"
 version = "0.1"
-description = "mondoo-ai packages"
+description = "mondoo engine packages"
 requires-python = ">=3.10"
 dependencies = [
     "asyncpg",
