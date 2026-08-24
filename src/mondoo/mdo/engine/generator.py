@@ -296,7 +296,6 @@ async def stream_response_in_messages_with_tool(
                     if finish_reason == 'tool_calls':
                         break
 
-            logger.info("TOOL BUFFER: %s", str(tool_calls_buffer))
             if tool_calls_buffer:
                 _messages.append({
                     'role'       : 'assistant',
@@ -338,7 +337,6 @@ async def stream_response_in_messages_with_tool(
                                 'tool_call_id' : tool_call['id'],
                             }
                         )
-                    logger.info(f"Execute Tool (name: {name}, params: {args}); Get Result: {result}")
 
                 continue
 
