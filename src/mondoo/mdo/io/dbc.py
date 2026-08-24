@@ -1,6 +1,6 @@
-from ..io.db.psql        import get_default_psql_config
-from ..io.db.psql_reader import PostgresReader
-from ..io.db.psql_writer import PostgresWriter
+from .db.psql        import get_default_psql_config
+from .db.psql_reader import PostgresReader
+from .db.psql_writer import PostgresWriter
 
 
 class DBC:
