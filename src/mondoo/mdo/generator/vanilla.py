@@ -4,7 +4,7 @@ from mondoo.configurator import (
     get_global_config_value
 )
 
-from .manager.message_history import MsgHistoryManager
+from ..engine.manager.message_history import MsgHistoryManager
 
 from fastapi    import HTTPException
 from typing     import AsyncGenerator, List, Optional
@@ -107,9 +107,9 @@ async def execute_tool_async(name: str, args: dict):
     reader, writer = await asyncio.open_unix_connection(SOCK_PATH_4_GATEWAY)
 
     req = { 
-        'cmd': 'call', 
-        'target': name, 
-        'args': args 
+        'cmd'    : 'call', 
+        'target' : name, 
+        'args'   : args 
     }
     
     writer.write((json.dumps(req) + '\n').encode())
@@ -204,7 +204,7 @@ async def stream_response_in_messages_with_tool(
     opts       : dict,
     model_type : str,
     context_id : Optional[str] = None,
-    time_out   : int = 20
+    time_out   : int = 10
 ) -> AsyncGenerator[dict, None]:
     """
     @TODO comment
