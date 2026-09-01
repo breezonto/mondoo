@@ -1,8 +1,7 @@
-from mondoo.mdo.engine.handler   import run_gateway
-from mondoo.mdo.api.chatbot      import SYSTEM_PROMPT_DEFAULT
-from mondoo.mdo.engine.generator import (
+from mondoo.mdo.engine.handler    import run_gateway
+from mondoo.mdo.api.chatbot       import SYSTEM_PROMPT_DEFAULT
+from mondoo.mdo.generator.vanilla import (
     response_in_message_with_tool,
-    stream_response_in_messages_with_tool,
     query_message_history
 )
 
@@ -16,6 +15,8 @@ from contextlib        import asynccontextmanager
 from fastapi           import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pathlib           import Path
+
+import mondoo.mdo.generator.lg as L
 
 import time
 import json
@@ -120,7 +121,7 @@ async def chat_completion(req: ReqChatCompletion):
         message_dicts.append(message.model_dump())
 
     if req.options.stream:
-        stream_gen = stream_response_in_messages_with_tool(message_dicts, opts, req.model_type)
+        stream_gen = L.stream_response_in_messages_with_tool(message_dicts, opts, req.model_type)
         return StreamingResponse(json_streamer(stream_gen), media_type='text/json')
 
     start     = time.perf_counter()
