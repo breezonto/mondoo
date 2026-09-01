@@ -33,6 +33,10 @@ standard = [
     "langgraph"
 ]
 
+deepseek = [
+    "langchain-deepseek"
+]
+
 ontology = [
     "rdflib",
     "networkx",
