@@ -29,7 +29,8 @@ dependencies = [
 
 [dependency-groups]
 standard = [
-    "haystack-ai"
+    "haystack-ai",
+    "langgraph"
 ]
 
 ontology = [
