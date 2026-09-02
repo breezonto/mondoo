@@ -214,6 +214,44 @@ def convert_messages(messages : list[dict[str, Any]]) -> list[BaseMessage]:
 
 async def build_chat_graph():
     """
+    build the basic agent graph:
+                  ┌─────────┐
+                  │  START  │
+                  └────┬────┘
+                       │
+                       ▼
+              ┌────────────────┐
+              │    chatbot     │
+              │                │
+              │  DeepSeek LLM  │
+              │  + bound_tools │
+              └───────┬────────┘
+                      │
+                      ▼
+              ┌─────────────────┐
+              │ should_continue │
+              └───────┬─────────┘
+                      │
+             ┌────────┴─────────┐
+             │                  │
+       "tools"                END
+             │                  │
+             ▼                  ▼
+       ┌───────────┐       ┌─────────┐
+       │   tools   │       │   END   │
+       │ ToolNode  │       └─────────┘
+       └─────┬─────┘
+             │
+             │
+             └──────────────────────┐
+                                    │
+                                    ▼
+                              ┌────────────┐
+                              │  chatbot   │
+                              └─────┬──────┘
+                                    │
+                                    ▼
+                                  ......
     """
     
     # tools cannot be hot-reload yet
