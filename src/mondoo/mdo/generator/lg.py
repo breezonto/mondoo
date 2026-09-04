@@ -417,3 +417,18 @@ async def stream_response_in_messages_with_tool(
                             history_id = context_id,
                             message    = message_to_dict(inc_message)
                         )
+
+
+async def query_message_history(history_id : str):
+    """
+    @TODO comment
+    """
+    msg_manager = MsgHistoryManager()
+    return msg_manager.query_messages(history_id)
+
+
+async def clear_message_history(history_id : str):
+    msg_manager = MsgHistoryManager()
+    msg_manager.clear_messages(history_id)
+
+
