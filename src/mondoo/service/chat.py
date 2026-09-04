@@ -1,10 +1,7 @@
 from mondoo.mdo.engine.handler    import run_gateway
-from mondoo.mdo.generator.vanilla import (
-    response_in_message_with_tool,
-    query_message_history
-)
+from mondoo.mdo.generator.vanilla import (response_in_message_with_tool)
 
-from mondoo.service.rr.chat import (
+from .rr.chat import (
     Role, Message, Usage, Choice,
     ReqChatCompletion,
     RespChatCompletionNoStream,

@@ -84,12 +84,12 @@ class RespChatCompletionNoStream(BaseModel):
 
 
 class RespMessageHistory(BaseModel):
-    success: bool
-    context_id: str
-    messages: list[dict[str, Any]]
+    success    : bool
+    context_id : str
+    messages   : list[dict[str, Any]]
 
 
 class RespDeleteMessageHistory(BaseModel):
-    success: bool
-    context_id: str
-    deleted: bool
+    success    : bool
+    context_id : str
+    deleted    : bool
