@@ -27,7 +27,7 @@ class MsgHistoryManager:
         # @TODO message id should be timestamp encoded serial number
         # for convenience, temporally set it as random number
 
-        _message['id'] = str(uuid.uuid4())
+        # _message['id'] = str(uuid.uuid4())
 
         self._cache_client.write_item(
             _message,

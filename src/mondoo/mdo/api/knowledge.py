@@ -1,4 +1,4 @@
-from ..engine.dbc import get_current_async_dbc, get_current_sync_dbc
+from ..io.dbc import get_current_async_dbc, get_current_sync_dbc
 
 import mondoo.mdo.engine.kbase as K
 import logging

@@ -1,5 +1,5 @@
 from ..engine.manager.file_descriptor       import FDManager
-from ..io.file.generic     import FileDesc, FileStage, FileRecord
+from ..io.parser.generic     import FileDesc, FileStage, FileRecord
 
 import requests
 import logging

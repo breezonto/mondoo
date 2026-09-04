@@ -4,7 +4,7 @@ from mondoo.configurator import (
     get_global_config_value
 )
 
-from .manager.message_history import MsgHistoryManager
+from ..engine.manager.message_history import MsgHistoryManager
 
 from fastapi    import HTTPException
 from typing     import AsyncGenerator, List, Optional
@@ -107,9 +107,9 @@ async def execute_tool_async(name: str, args: dict):
     reader, writer = await asyncio.open_unix_connection(SOCK_PATH_4_GATEWAY)
 
     req = { 
-        'cmd': 'call', 
-        'target': name, 
-        'args': args 
+        'cmd'    : 'call', 
+        'target' : name, 
+        'args'   : args 
     }
     
     writer.write((json.dumps(req) + '\n').encode())
@@ -203,8 +203,8 @@ async def stream_response_in_messages_with_tool(
     messages   : List[dict], 
     opts       : dict,
     model_type : str,
-    history_id : Optional[str] = None,
-    time_out   : int = 20
+    context_id : Optional[str] = None,
+    time_out   : int = 10
 ) -> AsyncGenerator[dict, None]:
     """
     @TODO comment
@@ -296,7 +296,6 @@ async def stream_response_in_messages_with_tool(
                     if finish_reason == 'tool_calls':
                         break
 
-            logger.info("TOOL BUFFER: %s", str(tool_calls_buffer))
             if tool_calls_buffer:
                 _messages.append({
                     'role'       : 'assistant',
@@ -304,9 +303,9 @@ async def stream_response_in_messages_with_tool(
                     'tool_calls' : tool_calls_buffer
                 })
 
-                if history_id is not None:
+                if context_id is not None:
                     MsgHistoryManager.push_message(
-                        history_id,
+                        context_id,
                         message= { 
                             'role'       : 'assistant', 
                             'content'    : content, 
@@ -329,16 +328,15 @@ async def stream_response_in_messages_with_tool(
                         'content'      : result
                     })
 
-                    if history_id is not None:
+                    if context_id is not None:
                         MsgHistoryManager.push_message(
-                            history_id,
+                            context_id,
                             message= { 
                                 'role'         : 'tool', 
                                 'content'      : content, 
                                 'tool_call_id' : tool_call['id'],
                             }
                         )
-                    logger.info(f"Execute Tool (name: {name}, params: {args}); Get Result: {result}")
 
                 continue
 
@@ -348,9 +346,9 @@ async def stream_response_in_messages_with_tool(
                     'content' : content
                 })
 
-                if history_id is not None:
+                if context_id is not None:
                     MsgHistoryManager.push_message(
-                        history_id,
+                        context_id,
                         message= { 
                             'role'    : 'assistant', 
                             'content' : content

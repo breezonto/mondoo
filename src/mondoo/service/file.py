@@ -6,7 +6,7 @@ from .rr.upload import (
 
 from .rr.generic   import RespStatus
 from ..mdo.engine.manager.file_descriptor import FDManager
-from ..mdo.io.file.generic       import FileStage, FileRecord
+from ..mdo.io.parser.generic       import FileStage, FileRecord
 from mondoo.configurator   import get_global_config_value, SERVER_URL, ALLOWED_IPS
 
 from pathlib               import Path

@@ -1,5 +1,5 @@
 from mondoo.configurator   import SERVER_URL, ALLOWED_IPS
-from mondoo.mdo.engine.dbc import get_current_async_dbc
+from mondoo.mdo.io.dbc import get_current_async_dbc
 
 from .rr.vkbase       import *   
 from .rr.generic      import RespStatus
