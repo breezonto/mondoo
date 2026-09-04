@@ -11,7 +11,9 @@ from typing import Optional, Dict
 import redis
 import os
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 
 REDIS_HOST = os.getenv('REDIS_HOST', None)
 REDIS_PORT = os.getenv('REDIS_PORT', None)
@@ -37,7 +39,9 @@ def _write_entry_to_cache_(
     write data to cache
     """
 
-    id_name = entry[id_field]
+    id_name = entry['data'][id_field]
+
+    logger.info(f"Entry: {entry}")
 
     # if id_name exists, update it
     rh.hset(hash_name, id_name, json.dumps(entry))
@@ -132,6 +136,8 @@ class CacheHelper:
         """
         @TODO comment
         """
+        if suffix != '':
+            suffix = f'@{suffix}'
 
         _write_entry_to_cache_(
             obj,
@@ -193,7 +199,8 @@ class CacheHelper:
         if suffix != '':
             suffix = f'@{suffix}'
         
-        ids = rh.lrange(''.join([self._list_cache_name, '-', suffix]), 0, -1)
+        ids = rh.lrange(''.join([self._list_cache_name, suffix]), 0, -1)
+
         data = []
         for curr_id in ids:
             instance = _read_entry_from_cache_(
@@ -202,8 +209,10 @@ class CacheHelper:
                 hash_name = f'{self._hash_cache_name}{suffix}',
                 set_name  = f'{self._set_cache_name}{suffix}'              
             )
+
             if instance:
                 data.append(instance)
+
         return data
 
 

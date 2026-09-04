@@ -67,7 +67,7 @@ class ReqChatCompletion(BaseModel):
     """
     model_type : Literal['local', 'remote']
     messages   : List[Message]
-    memory_id  : Optional[str]            = Field(None, description="Should incetive the internal memory?")
+    context_id : Optional[str]            = Field(None, description="Should incetive the internal memory?")
     options    : Optional[ReqChatOptions] = ReqChatOptions()
     
           

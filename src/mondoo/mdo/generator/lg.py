@@ -1,4 +1,9 @@
-from mondoo.configurator import (END_FRAME, get_global_config_value)
+from mondoo.configurator import (
+    END_FRAME, 
+    get_global_config_value
+)
+
+from mondoo.mdo.engine.manager.message_history import MsgHistoryManager
 
 from langgraph.graph import (
     StateGraph,
@@ -16,7 +21,8 @@ from langchain_core.messages import (
 )
 
 from typing                  import AsyncGenerator, Any
-from langchain_core.messages import HumanMessage
+from uuid                    import uuid4
+from langchain_core.messages import HumanMessage, messages_to_dict, message_to_dict, messages_from_dict
 from langchain_core.tools    import StructuredTool
 from langchain_deepseek      import ChatDeepSeek
 from langgraph.prebuilt      import ToolNode
@@ -170,7 +176,9 @@ async def _get_all_available_tools_():
     return tools
 
 
-def convert_messages(messages : list[dict[str, Any]]) -> list[BaseMessage]:
+def convert_to_lc_messages(
+    messages: list[dict[str, Any]]
+) -> list[BaseMessage]:
 
     result: list[BaseMessage] = []
 
@@ -180,34 +188,40 @@ def convert_messages(messages : list[dict[str, Any]]) -> list[BaseMessage]:
 
         if role == 'user':
             result.append(
-                HumanMessage(content = content)
+                HumanMessage(
+                    id=str(uuid4()),
+                    content=content,
+                )
             )
 
         elif role == 'assistant':
             result.append(
                 AIMessage(
-                    content    = content,
-                    tool_calls = message.get('tool_calls', []),
+                    id=str(uuid4()),
+                    content=content,
+                    tool_calls=message.get('tool_calls', []),
                 )
             )
 
         elif role == 'system':
             result.append(
-                SystemMessage(content=content)
+                SystemMessage(
+                    id=str(uuid4()),
+                    content=content,
+                )
             )
 
         elif role == 'tool':
             result.append(
                 ToolMessage(
-                    content      = content,
-                    tool_call_id = message['tool_call_id'],
+                    id=str(uuid4()),
+                    content=content,
+                    tool_call_id=message['tool_call_id'],
                 )
             )
 
         else:
-            raise ValueError(
-                f"Unknown message role: {role}"
-            )
+            raise ValueError(f"Unknown message role: {role}")
 
     return result
 
@@ -318,7 +332,25 @@ async def stream_response_in_messages_with_tool(
     
     graph = await build_chat_graph()
 
-    langchain_messages = convert_messages(messages)
+    msg_manager = MsgHistoryManager()
+
+    if context_id is not None:
+        lc_messages = convert_to_lc_messages(messages)
+
+        for lc_message in lc_messages:
+            msg_manager.push_message(
+                history_id = context_id,
+                message    = message_to_dict(lc_message)
+            )
+
+        serialized_messages = msg_manager.query_messages(context_id)
+
+        full_lc_messages = messages_from_dict(serialized_messages)
+
+        logger.info(f"FULL LC MESSAGES: {full_lc_messages}")
+    else:
+        full_lc_messages = convert_to_lc_messages(messages)
+
 
     config = {
         "configurable": {
@@ -326,45 +358,62 @@ async def stream_response_in_messages_with_tool(
         }
     }
 
-    async for message, metadata in graph.astream(
+    full_content = ""
+    previous_message_count = len(full_lc_messages)
+
+    async for mode, chunk in graph.astream(
         {
-            "messages": langchain_messages
+            'messages': full_lc_messages
         },
         config      = config,
-        stream_mode = 'messages',
+        stream_mode = ['messages', "values"],
     ):
+        if mode == 'messages':
+            message, metadata = chunk
 
-        # Ignore tool messages
-        if message.type != "AIMessageChunk":
-            continue
+            if message.type != "AIMessageChunk":
+                continue
 
-        if not message.content:
-            continue
+            if not message.content:
+                continue
 
-        yield {
-            "id"         : None,
-            "object"     : "chat.completion.chunk",
-            "created"    : int(time.time()),
-            "model_type" : model_type,
+            full_content += message.content
 
-            "usage" : {
-                "prompt_tokens"            : None,
-                "completion_tokens"        : None,
-                "total_tokens"             : None,
-                "token_generation_speed"   : None,
-                "prompt_tokens_details"    : None,
-                "prompt_cache_hit_tokens"  : 0,
-                "prompt_cache_miss_tokens" : 0,
-            },
+            yield {
+                "id": None,
+                "object": "chat.completion.chunk",
+                "created": int(time.time()),
+                "model_type": model_type,
+                "usage": {
+                    "prompt_tokens": None,
+                    "completion_tokens": None,
+                    "total_tokens": None,
+                    "token_generation_speed": None,
+                    "prompt_tokens_details": None,
+                    "prompt_cache_hit_tokens": 0,
+                    "prompt_cache_miss_tokens": 0,
+                },
+                "choices": [
+                    {
+                        "index": 0,
+                        "message": {
+                            "role": "assistant",
+                            "content": message.content,
+                        },
+                        "finish_reason": None,
+                    }
+                ],
+            }
 
-            "choices": [
-                {
-                    "index": 0,
-                    "message": {
-                        "role": "assistant",
-                        "content": message.content,
-                    },
-                    "finish_reason": None,
-                }
-            ],
-        }
+        elif mode == "values":
+            if context_id is not None:
+                current_messages       = chunk['messages']
+                incremental_messages   = current_messages[previous_message_count:]
+                previous_message_count = len(current_messages)
+
+                if incremental_messages:
+                    for inc_message in incremental_messages:
+                        msg_manager.push_message(
+                            history_id = context_id,
+                            message    = message_to_dict(inc_message)
+                        )

@@ -97,23 +97,20 @@ async def chat_completion(req: ReqChatCompletion):
     elapsed    = 0.0
 
     if len(req.messages) < 1: # messages is empty
-        HTTPException(status_code=422, detail="messages should not be empty!")
+        HTTPException(status_code=422, detail="Messages Should Not Be Empty!")
 
-    if req.memory_id is not None:
-        messages = await query_message_history(req.memory_id)
-        messages.append(req.messages)
-    else:
-        messages = req.messages
+    messages = req.messages
 
-    if messages[0].role != Role.SYSTEM:
-        message = Message(
-            role    = Role.SYSTEM,
-            content = SYSTEM_PROMPT_DEFAULT 
-        )
-        messages.insert(0, message)
-        logger.info("\"\nSystem Prompt Not Set. Using Default System Prompt:\n %s\n\"", SYSTEM_PROMPT_DEFAULT)
-    else:
-        logger.info("\"\nFrontend Set System Prompt:\n %s\n\"", messages[0].content)
+    # if req.context_id is None:
+    #     if messages[0].role != Role.SYSTEM:
+    #         message = Message(
+    #             role    = Role.SYSTEM,
+    #             content = SYSTEM_PROMPT_DEFAULT 
+    #         )
+    #         messages.insert(0, message)
+    #         logger.info("\"\nSystem Prompt Not Set. Using Default System Prompt:\n %s\n\"", SYSTEM_PROMPT_DEFAULT)
+    #     else:
+    #         logger.info("\"\nFrontend Set System Prompt:\n %s\n\"", messages[0].content)
 
     message_dicts = []
     
@@ -121,7 +118,12 @@ async def chat_completion(req: ReqChatCompletion):
         message_dicts.append(message.model_dump())
 
     if req.options.stream:
-        stream_gen = L.stream_response_in_messages_with_tool(message_dicts, opts, req.model_type)
+        stream_gen = L.stream_response_in_messages_with_tool(
+            messages   = message_dicts, 
+            opts       = opts, 
+            model_type = req.model_type, 
+            context_id = req.context_id
+        )
         return StreamingResponse(json_streamer(stream_gen), media_type='text/json')
 
     start     = time.perf_counter()
