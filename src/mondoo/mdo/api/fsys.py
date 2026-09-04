@@ -85,7 +85,7 @@ async def do_parse_file_task_async(
     
     with file_task_lock:
         record.desc.target_path = target_path
-        record.stage            = FileStage.CACHED
+        record.stage            = FileStage.PARSED
         record.total_chunks     = num_chunks
         await FDManager.archive(file_id, record)
 

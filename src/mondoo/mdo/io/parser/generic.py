@@ -10,7 +10,7 @@ class FileStage(str, Enum):
     DELETED   = 'deleted'
     UPLOADING = 'uploading'
     UPLOADED  = 'uploaded'
-    CACHED    = 'cached'
+    PARSED    = 'parsed'
     STORED    = 'stored'
     STALE     = 'stale'
 

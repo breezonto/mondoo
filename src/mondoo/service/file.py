@@ -1,7 +1,8 @@
 from .rr.upload import (
     ReqCompleteUpload,
     RespUploading,
-    RespFileStatus
+    RespFileStatus,
+    ReqExtract
 )
 
 from .rr.generic   import RespStatus
@@ -56,7 +57,7 @@ def launch_parse_file_task_thread(
     
     with ifsys.file_task_lock:
         record.desc.target_path = cache_path
-        record.stage            = FileStage.CACHED
+        record.stage            = FileStage.PARSED
         record.total_chunks     = num_chunks
         FDManager.archive(file_id, record)
 
@@ -200,7 +201,7 @@ async def complete(
         logger.error("Record %s not found: %s", str(file_id), str(record))
         raise HTTPException(404, "Record not found")
     
-    if record.stage in [FileStage.UPLOADED, FileStage.CACHED, FileStage.STORED]:
+    if record.stage in [FileStage.UPLOADED, FileStage.PARSED, FileStage.STORED]:
         return RespFileStatus(
             status  = RespStatus.OK,
             file_id = file_id,
@@ -227,30 +228,45 @@ async def complete(
 
     record.stage = FileStage.UPLOADED
     await FDManager.archive_in_async(file_id, record) 
-
-    if req.should_cache:
-        if req.should_offline:
-            func = launch_parse_file_task_thread
-            asyncio.create_task(
-                asyncio.to_thread(func, file_id, source_path, record, req.parse_meth)
-            )
-        else:
-            await ifsys.do_parse_file_task_async(
-                file_id, 
-                source_path, 
-                record, 
-                req.parse_meth
-            )
-
     return RespFileStatus(
         status  = RespStatus.OK,
         file_id = file_id,
         stage   = record.stage
     )
 
+    # if req.should_cache:
+    #     if req.should_offline:
+    #         func = launch_parse_file_task_thread
+    #         asyncio.create_task(
+    #             asyncio.to_thread(func, file_id, source_path, record, req.parse_meth)
+    #         )
+    #     else:
+    #         await ifsys.do_parse_file_task_async(
+    #             file_id, 
+    #             source_path, 
+    #             record, 
+    #             req.parse_meth
+    #         )
+
+
+@app.post('/api/v1/files/{file_id}/extraction')
+async def extract(
+    file_id : str,
+    req     : ReqExtract
+):
+    record = FDManager.query(file_id)
+    await ifsys.do_parse_file_task_async(
+        file_id, 
+        record.desc.source_path, 
+        record, 
+        req.method_name
+    )
+
+
+
 
 @app.get('/api/v1/files/{file_id}/status', response_model=RespFileStatus)
-def get_file_status(file_id: str):
+async def get_file_status(file_id: str):
     record = FDManager.query(file_id)
     if not record:
         logger.warning("Record not found: %s", file_id)
@@ -297,26 +313,6 @@ async def remove_file(file_id: str):
         status  = RespStatus.OK,
         file_id = file_id, 
         stage   = FileStage.DELETED
-    )
-
-      
-@app.post('/api/v1/files/{file_id}/cache?={parse_meth}')
-def cache_file(file_id : str, parse_meth : str):
-    upload_dir = FDManager.source_dir  
-    record = FDManager.query(file_id)
-    
-    if not record: raise HTTPException(404, "Record not found")
-    if record.stage != FileStage.UPLOADED:
-        raise HTTPException(400, "File not yet completed")
-    
-    path = os.path.join(upload_dir, record['filename'])
-    ifsys.launch_cache_file_task_thread(file_id, path, record, parse_meth)
-    record.stage = FileStage.CACHED
-    
-    return RespFileStatus(
-        status  = RespStatus.OK,
-        file_id = file_id,
-        stage   = FileStage.CACHED
     )
     
     
