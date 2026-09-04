@@ -181,7 +181,7 @@ async def del_message_history(context_id : str):
     await L.clear_message_history(context_id)
 
     return RespDeleteMessageHistory(
-        success=True,
-        context_id=context_id,
-        deleted=True,
+        success    = True,
+        context_id = context_id,
+        deleted    = True,
     )
