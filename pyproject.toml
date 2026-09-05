@@ -23,7 +23,8 @@ dependencies = [
     "aiofiles",
     "pyyaml",
     "httpx[socks]",
-    "requests"
+    "requests",
+    "Pillow"
 ]
 
 [dependency-groups]
