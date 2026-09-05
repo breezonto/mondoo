@@ -30,7 +30,8 @@ class FileRecord(BaseModel):
     curr_slice     : int
     total_slices   : int
     total_chunks   : int
-    
+    upload_time    : Optional[str]
+
     @classmethod
     def create(cls,
         id           : str,
@@ -42,7 +43,8 @@ class FileRecord(BaseModel):
         stage        : str,
         curr_slice   : int,
         total_slices : int,
-        total_chunks : int
+        total_chunks : int,
+        upload_time  : Optional[str] = None
     ):
         desc = FileDesc(
             file_id     = id,
@@ -58,7 +60,8 @@ class FileRecord(BaseModel):
             stage        = stage,
             curr_slice   = curr_slice,
             total_slices = total_slices,
-            total_chunks = total_chunks
+            total_chunks = total_chunks,
+            upload_time  = upload_time
         )
     
     
@@ -73,12 +76,13 @@ class FileRecord(BaseModel):
     @property
     def view(self):
         return {
-            'file_id'   : self.desc.file_id,
-            'filename'  : self.desc.stem,
-            'type'      : self.desc.ext,
-            'size'      : self.desc.size,
-            'stage'     : self.stage,
-            'num_chunk' : self.total_chunks
+            'file_id'     : self.desc.file_id,
+            'filename'    : self.desc.stem,
+            'type'        : self.desc.ext,
+            'size'        : self.desc.size,
+            'stage'       : self.stage,
+            'num_chunk'   : self.total_chunks,
+            'upload_time' : self.upload_time 
         }
         
     @property

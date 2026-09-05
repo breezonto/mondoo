@@ -308,11 +308,11 @@ async def remove_file(file_id: str):
     except FileNotFoundError as e:
         hint = f"\"Delete resource missing for <{file_id}>: {str(e)}\""
         logger.warning(hint)
-        raise HTTPException(status_code=404, detail=hint)
+        # raise HTTPException(status_code=404, detail=hint)
     except Exception:
         hint = f"\"Unexpected error while removing <{file_id}>\""
         logger.exception(hint)
-        raise HTTPException(status_code=404, detail=hint)
+        # raise HTTPException(status_code=404, detail=hint)
     
     return RespFileStatus(
         status  = RespStatus.OK,

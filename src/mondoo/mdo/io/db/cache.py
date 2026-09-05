@@ -38,8 +38,10 @@ def _write_entry_to_cache_(
     """
     write data to cache
     """
-
-    id_name = entry['data'][id_field]
+    if entry.get('data', None) is None:
+        id_name = entry[id_field]
+    else:
+        id_name = entry['data'][id_field]
 
     logger.info(f"Entry: {entry}")
 
