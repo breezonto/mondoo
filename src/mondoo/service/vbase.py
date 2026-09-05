@@ -14,9 +14,16 @@ import os
 
 logger = logging.getLogger(__name__)
 
-
+SERVER_URL = os.getenv('PROXY_URL', None)
 logger.info(f"Proxy URLs: {SERVER_URL}")
+
+ALLOWED_IPS = os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1')
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
+
+PSQL_HOST = os.getenv('PSQL_HOST', None)
+PSQL_PORT = os.getenv('PSQL_PORT', None)
+PSQL_DB   = os.getenv('PSQL_DB', None)
+logger.info(f"PostgreSQL Connection: {PSQL_HOST}:{PSQL_PORT}@{PSQL_DB}")
 
 
 app = FastAPI(

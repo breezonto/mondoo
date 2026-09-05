@@ -23,3 +23,7 @@ class RespFileStatus(BaseModel):
     status  : str
     file_id : str   = Field(description="The unique id of that file")
     stage   : str   = Field(description="The stage of that file")
+
+
+class ReqExtract(BaseModel):
+    method_name : Literal['text', 'ocr']

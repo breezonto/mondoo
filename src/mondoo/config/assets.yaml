@@ -1,5 +1,5 @@
-object_dir  : /home/guard/cache
-source_dir : /home/guard/file
+object_dir  : /home/cache
+source_dir  : /home/file
 
 sock_path_4_kaleido   : /tmp/mcp_kaleido.sock
 sock_path_4_librarian : /tmp/mcp_librarian.sock

@@ -50,15 +50,17 @@ def select_apps(names : Optional[List[str]] = None):
 
 def build_envs(
     app_conf     : Dict,
-    storage_conf : Dict
+    storage_conf : Dict,
+    asset_conf   : Dict
 ):
     env = os.environ.copy()
-    
+
+    # service-side configuration
     env['ALLOWED_INCOMING_IPS'] = ','.join(app_conf['allowed_incoming_ips'])
     env['PROXY_URL']            = ','.join(app_conf['proxy_url'])
 
+    # storage configuration
     storage_name = app_conf.get('storage', None)
-    
     if storage_name is not None:
         redis_spec = storage_conf['redis'][storage_name]
         env['REDIS_HOST'] = str(redis_spec['host'])
@@ -71,6 +73,12 @@ def build_envs(
         env['PSQL_DB']    = str(','.join(list(map(str, psql_spec['db']))))
         env['PSQL_USER']  = str(psql_spec['user'])
         env['PSQL_PWSD']  = str(psql_spec['pwsd'])
+
+    # assets configuration
+    if asset_conf is not None:
+        env['OBJECT_DIR'] = asset_conf['object_dir']
+        env['SOURCE_DIR'] = asset_conf['source_dir']
+
     return env
 
 
@@ -78,7 +86,8 @@ def launch_apps(
     selected_apps : Dict,
     *, 
     log_base_dir  : PathLike[str],
-    storage_conf  : Optional[Dict] = None
+    storage_conf  : Optional[Dict] = None,
+    asset_conf    : Optional[Dict] = None
 ):
     for name, app in selected_apps.items():
         log_dir = os.path.join(log_base_dir, name)
@@ -91,7 +100,7 @@ def launch_apps(
         print(f"Starting {app['script']} on port {app['port']} -> logging to {log_path}")
         log_file = open(log_path, 'a')
 
-        env = build_envs(app, storage_conf)
+        env = build_envs(app, storage_conf, asset_conf)
         
         uvicorn_cmd = [
             'uv', 'run', '--no-sync',

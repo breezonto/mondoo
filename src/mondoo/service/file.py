@@ -1,32 +1,38 @@
-from .rr.upload import (
+from mondoo.mdo.engine.manager.file_descriptor import FDManager
+from mondoo.mdo.io.parser.generic              import FileStage, FileRecord
+
+from .rr.generic import RespStatus
+from .rr.upload  import (
     ReqCompleteUpload,
     RespUploading,
-    RespFileStatus
+    RespFileStatus,
+    ReqExtract
 )
-
-from .rr.generic   import RespStatus
-from ..mdo.engine.manager.file_descriptor import FDManager
-from ..mdo.io.parser.generic       import FileStage, FileRecord
-from mondoo.configurator   import get_global_config_value, SERVER_URL, ALLOWED_IPS
 
 from pathlib               import Path
 from datetime              import datetime, timezone
 from fastapi               import FastAPI, Form, HTTPException, Request
 from fastapi               import UploadFile
-from fastapi.responses     import HTMLResponse
 from fastapi.openapi.utils import get_openapi
 
 import mondoo.mdo.api.fsys as ifsys
 import os
-import asyncio
 import logging
 
 
 logger = logging.getLogger(__name__)
 
 
+SERVER_URL = os.getenv('PROXY_URL', None)
 logger.info(f"Proxy URLs: {SERVER_URL}")
+
+ALLOWED_IPS = os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1')
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
+
+PSQL_HOST = os.getenv('PSQL_HOST', None)
+PSQL_PORT = os.getenv('PSQL_PORT', None)
+PSQL_DB   = os.getenv('PSQL_DB', None)
+logger.info(f"PostgreSQL Connection: {PSQL_HOST}:{PSQL_PORT}@{PSQL_DB}")
 
 
 app = FastAPI(
@@ -35,8 +41,8 @@ app = FastAPI(
     openapi_url = "/openapi.json",
     servers     = [
         {
-            'url': SERVER_URL,
-            'description': "Nginx reverse proxy"
+            'url'         : SERVER_URL,
+            'description' : "Nginx reverse proxy"
         }
     ]
 )
@@ -56,265 +62,9 @@ def launch_parse_file_task_thread(
     
     with ifsys.file_task_lock:
         record.desc.target_path = cache_path
-        record.stage            = FileStage.CACHED
+        record.stage            = FileStage.PARSED
         record.total_chunks     = num_chunks
         FDManager.archive(file_id, record)
-
-
-@app.get("/api/v1/files/upload")
-async def index():
-    return HTMLResponse("""
-<html>
-<body>
-<h3>Chunked File Upload with WebSocket Progress</h3>
-<label>
-  <input type="checkbox" id="ifImage" checked />
-  If it's in image modality?
-</label>
-
-<input type="file" id="fileInput"/>
-<button onclick="upload()">Upload</button>
-<button onclick="showFileList()">Show Uploaded Files</button>
-
-<button onclick="deleteAllFiles()" style="margin-top:10px; color:white; background-color:red;">
-  Clean All File Records
-</button>
-
-<div id="progress">0%</div>
-<div id="fileList"></div>
-
-<script>
-
-function nowMs() {
-    const d = new Date();
-    return d.toISOString().replace("T", ".").replace("Z", "").replace(/[:-]/g, ".");
-}
-
-function uuidv4() {
-  if (crypto.randomUUID) {
-    return crypto.randomUUID();
-  }
-  return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-  );
-}
-
-async function upload() {
-    const uploadStartTime = Date.now(); // ms since epoch
-    console.log("Upload started at:", new Date(uploadStartTime).toISOString());
-    
-    const file = document.getElementById('fileInput').files[0];
-    if (!file) return alert("Choose a file first!");
-
-    const fileId      = uuidv4();
-    const sliceSize   = 1024 * 1024; // 1MB
-    const totalSlices = Math.ceil(file.size / sliceSize);
-
-    // Step 1: Upload slices
-    for (let i = 0; i < totalSlices; i++) {
-        const chunk = file.slice(i * sliceSize, (i + 1) * sliceSize);
-
-        const formData = new FormData();
-        formData.append('file', chunk);
-        formData.append("filename", file.name);
-        formData.append("slice_index", i);
-        formData.append("total_slices", totalSlices);
-        
-        const startTs = Date.now();
-        
-        try {
-            const resp = await fetch(
-                `/ragai/kbase/files/${fileId}/slices/${i}`,
-                {
-                    method: "PUT",
-                    body: formData,
-                    headers: {
-                        "x-upload-timestamp": startTs.toString()
-                    }
-                }
-            );
-            const endTs = Date.now(); // ⬅ end timestamp
-            const durationMs = endTs - startTs;
-            
-            if (!resp.ok) throw new Error(`Chunk ${i} failed`);
-            const data = await resp.json();
-            
-            document.getElementById('progress').innerText =
-                `Slices ${i + 1}/${totalSlices} | \n` +
-                `Client Send Time: ${data.client_send_time} | \n` +
-                `Server Recv Time: ${data.server_recv_time} | \n` +
-                `Transfer Duration: ${data.transfer_duration} | \n` +
-                `Server Save Duration: ${data.server_save_duration} | \n` +
-                `Total: ${data.percent}%`;
-            
-        } catch (err) {
-            alert(`Upload failed at chunk ${i}: ${err}`);
-            return;
-        }
-    }
-
-    // Step 2: Poll final status
-    let statusResp = await fetch(`/ragai/kbase/files/${fileId}/status`);
-    let statusData = await statusResp.json();
-    document.getElementById('progress').innerText = `Uploaded ${statusData.percent}%`;
-
-    checked = document.getElementById('ifImage').checked
-    let parse_meth = 'text'
-    if (checked) {
-        parse_meth = 'ocr'
-    }
-    
-    // Step 3: Complete upload
-    const completeResp = await fetch(`/ragai/kbase/files/${fileId}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            parse_meth,
-            should_cache:   true,
-            should_offline: true,
-            should_store:   true
-        })
-    });
-
-    if (!completeResp.ok) {
-        alert("Failed to complete upload");
-        return;
-    }
-
-    const completeData = await completeResp.json();
-    document.getElementById('progress').innerText = `Upload complete! File ID: ${completeData.file_id}`;
-}
-
-function fixedLength(str, length = 20) {
-    if (str.length > length) return str.slice(0, length - 3) + '...'; // truncate
-    return str.padEnd(length, ' '); // pad with spaces
-}
-
-async function showFileList() {
-    const fileListDiv = document.getElementById('fileList');
-    fileListDiv.innerHTML = "Loading...";
-
-    try {
-        const resp = await fetch('/ragai/kbase/files/');
-        if (!resp.ok) throw new Error("Failed to fetch file list");
-
-        const data = await resp.json();
-        const files = data.views;
-
-        if (files.length === 0) {
-            fileListDiv.innerHTML = "<i>No completed files</i>";
-            return;
-        }
-
-        const ul = document.createElement("ul");
-        for (const f of files) {
-            const li = document.createElement("li");
-
-            const info = document.createElement("span");
-            info.textContent =
-                `${f.filename} | type: ${f.type} | stage: ${f.stage} | size: ${f.size} bytes | chunks: ${f.num_chunk}`;
-
-            const btn = document.createElement("button");
-            btn.textContent = "Delete";
-            btn.style.marginLeft = "10px";
-            btn.onclick = () => deleteFile(f.file_id);
-
-            li.appendChild(info);
-            li.appendChild(btn);
-
-            ul.appendChild(li);
-        }
-        fileListDiv.innerHTML = ""; // clear loading
-        fileListDiv.appendChild(ul);
-
-    } catch (err) {
-        fileListDiv.innerHTML = `Error: ${err}`;
-    }
-}
-
-async function deleteFile(fileId) {
-    if (!confirm("Delete this file?")) return;
-
-    try {
-        const resp = await fetch(`/ragai/kbase/files/${fileId}`, {
-            method: "DELETE"
-        });
-
-        if (!resp.ok) {
-            throw new Error("Failed to delete file");
-        }
-
-        const data = await resp.json();
-
-        alert(`File ${data.file_id} deleted`);
-        showFileList(); // refresh list
-
-    } catch (err) {
-        alert(`Delete error: ${err}`);
-    }
-}
-
-async function deleteAllFiles() {
-    if (!confirm("Are you sure you want to delete ALL files?")) return;
-
-    try {
-        const resp = await fetch('/ragai/kbase/files/', {
-            method: 'DELETE'
-        });
-
-        if (!resp.ok) {
-            throw new Error("Failed to delete all files");
-        }
-
-        const data = await resp.json();
-        alert("All files deleted successfully!");
-
-        // Refresh the file list
-        showFileList();
-
-    } catch (err) {
-        alert(`Error deleting all files: ${err}`);
-    }
-}
-
-</script>
-
-</body>
-</html>
-""")
-
-
-'''
-@app.middleware('http')
-async def token_auth_middleware(request: Request, call_next):
-    auth_header = request.headers.get('Authorization', None)
-
-    if not auth_header:
-        raise HTTPException(
-            status_code = 401,
-            detail      = "Missing Authorization header"
-        )
-
-    try:
-        scheme, token = auth_header.split()
-        if scheme.lower() != "bearer":
-            raise ValueError
-    except ValueError:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid Authorization format"
-        )
-
-    if token not in VALID_TOKENS:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid authentication token"
-        )
-
-    return await call_next(request)
-'''
 
 
 @app.middleware('http')
@@ -456,7 +206,7 @@ async def complete(
         logger.error("Record %s not found: %s", str(file_id), str(record))
         raise HTTPException(404, "Record not found")
     
-    if record.stage in [FileStage.UPLOADED, FileStage.CACHED, FileStage.STORED]:
+    if record.stage in [FileStage.UPLOADED, FileStage.PARSED, FileStage.STORED]:
         return RespFileStatus(
             status  = RespStatus.OK,
             file_id = file_id,
@@ -483,30 +233,45 @@ async def complete(
 
     record.stage = FileStage.UPLOADED
     await FDManager.archive_in_async(file_id, record) 
-
-    if req.should_cache:
-        if req.should_offline:
-            func = launch_parse_file_task_thread
-            asyncio.create_task(
-                asyncio.to_thread(func, file_id, source_path, record, req.parse_meth)
-            )
-        else:
-            await ifsys.do_parse_file_task_async(
-                file_id, 
-                source_path, 
-                record, 
-                req.parse_meth
-            )
-
     return RespFileStatus(
         status  = RespStatus.OK,
         file_id = file_id,
         stage   = record.stage
     )
 
+    # if req.should_cache:
+    #     if req.should_offline:
+    #         func = launch_parse_file_task_thread
+    #         asyncio.create_task(
+    #             asyncio.to_thread(func, file_id, source_path, record, req.parse_meth)
+    #         )
+    #     else:
+    #         await ifsys.do_parse_file_task_async(
+    #             file_id, 
+    #             source_path, 
+    #             record, 
+    #             req.parse_meth
+    #         )
+
+
+@app.post('/api/v1/files/{file_id}/extraction')
+async def extract(
+    file_id : str,
+    req     : ReqExtract
+):
+    record = FDManager.query(file_id)
+    await ifsys.do_parse_file_task_async(
+        file_id, 
+        record.desc.source_path, 
+        record, 
+        req.method_name
+    )
+
+
+
 
 @app.get('/api/v1/files/{file_id}/status', response_model=RespFileStatus)
-def get_file_status(file_id: str):
+async def get_file_status(file_id: str):
     record = FDManager.query(file_id)
     if not record:
         logger.warning("Record not found: %s", file_id)
@@ -543,36 +308,16 @@ async def remove_file(file_id: str):
     except FileNotFoundError as e:
         hint = f"\"Delete resource missing for <{file_id}>: {str(e)}\""
         logger.warning(hint)
-        raise HTTPException(status_code=404, detail=hint)
+        # raise HTTPException(status_code=404, detail=hint)
     except Exception:
         hint = f"\"Unexpected error while removing <{file_id}>\""
         logger.exception(hint)
-        raise HTTPException(status_code=404, detail=hint)
+        # raise HTTPException(status_code=404, detail=hint)
     
     return RespFileStatus(
         status  = RespStatus.OK,
         file_id = file_id, 
         stage   = FileStage.DELETED
-    )
-
-      
-@app.post('/api/v1/files/{file_id}/cache?={parse_meth}')
-def cache_file(file_id : str, parse_meth : str):
-    upload_dir = FDManager.source_dir  
-    record = FDManager.query(file_id)
-    
-    if not record: raise HTTPException(404, "Record not found")
-    if record.stage != FileStage.UPLOADED:
-        raise HTTPException(400, "File not yet completed")
-    
-    path = os.path.join(upload_dir, record['filename'])
-    ifsys.launch_cache_file_task_thread(file_id, path, record, parse_meth)
-    record.stage = FileStage.CACHED
-    
-    return RespFileStatus(
-        status  = RespStatus.OK,
-        file_id = file_id,
-        stage   = FileStage.CACHED
     )
     
     

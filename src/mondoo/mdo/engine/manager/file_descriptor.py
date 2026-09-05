@@ -1,8 +1,8 @@
 from ...io.dbc import init_db_client_from_default_config, get_current_dbc
 
 from mondoo.mdo.io.parser.generic import *
-from mondoo.mdo.io.db.cache     import *
-from mondoo.configurator import SOURCE_DIR, OBJECT_DIR, FD_TABLE
+from mondoo.mdo.io.db.cache       import *
+from mondoo.configurator          import FD_TABLE
 
 from datetime import datetime, timezone
 from os       import PathLike
@@ -33,6 +33,9 @@ file_task_lock = threading.Lock()
 init_db_client_from_default_config()
 
 
+OBJECT_DIR = os.getenv('OBJECT_DIR', './object')
+SOURCE_DIR = os.getenv('SOURCE_DIR', './source')
+
 class FDManager:
     """
     FDManager for archiving and parsing the parser.
@@ -45,6 +48,8 @@ class FDManager:
 
     _cache_name   = FD_TABLE + '_cache'
     _cache_client = CacheHelper(_cache_name)
+
+    _enable_persist_storage = False
 
     @classmethod
     def register(cls, *extensions):
@@ -114,52 +119,53 @@ class FDManager:
         @TODO comment
         """
 
-        db = get_current_dbc(is_async=False)
+        if cls._enable_persist_storage:
+            db = get_current_dbc(is_async=False)
 
-        if record.curr_slice == 0:
-            try:
-                data = {
-                    'file_id'      : file_id,
-                    'source_path'  : record.desc.source_path,
-                    'target_path'  : record.desc.target_path,
-                    'stem'         : record.desc.stem,
-                    'ext'          : record.desc.ext,
-                    'size'         : record.desc.size,
-                    'stage'        : record.stage,
-                    'curr_slice'   : record.curr_slice,
-                    'total_slices' : record.total_slices,
-                    'total_chunks' : record.total_chunks
-                }
+            if record.curr_slice == 0:
+                try:
+                    data = {
+                        'file_id'      : file_id,
+                        'source_path'  : record.desc.source_path,
+                        'target_path'  : record.desc.target_path,
+                        'stem'         : record.desc.stem,
+                        'ext'          : record.desc.ext,
+                        'size'         : record.desc.size,
+                        'stage'        : record.stage,
+                        'curr_slice'   : record.curr_slice,
+                        'total_slices' : record.total_slices,
+                        'total_chunks' : record.total_chunks
+                    }
 
-                db.insert(
-                    table_name = cls._default_file_table_name,
-                    data       = data,
-                    returning  = False 
-                )
-            except Exception as e:
-                raise RuntimeError(f"Failed creating new record: <{file_id}>") from e
-        else:
-            try:
-                attributes = {
-                    'source_path'  : record.desc.source_path,
-                    'target_path'  : record.desc.target_path,
-                    'size'         : record.desc.size,
-                    'stage'        : record.stage,
-                    'curr_slice'   : record.curr_slice,
-                    'total_chunks' : record.total_chunks
-                }
-                
-                db.update(
-                    table_name   = cls._default_file_table_name,
-                    data         = attributes,
-                    where        = "file_id = %s",
-                    where_params = (file_id,),
-                    returning    = False
-                )
+                    db.insert(
+                        table_name = cls._default_file_table_name,
+                        data       = data,
+                        returning  = False 
+                    )
+                except Exception as e:
+                    raise RuntimeError(f"Failed creating new record: <{file_id}>") from e
+            else:
+                try:
+                    attributes = {
+                        'source_path'  : record.desc.source_path,
+                        'target_path'  : record.desc.target_path,
+                        'size'         : record.desc.size,
+                        'stage'        : record.stage,
+                        'curr_slice'   : record.curr_slice,
+                        'total_chunks' : record.total_chunks
+                    }
+                    
+                    db.update(
+                        table_name   = cls._default_file_table_name,
+                        data         = attributes,
+                        where        = "file_id = %s",
+                        where_params = (file_id,),
+                        returning    = False
+                    )
 
-            except Exception as e:
-                raise RuntimeError(f"Failed updating record: <{file_id}>") from e
-        
+                except Exception as e:
+                    raise RuntimeError(f"Failed updating record: <{file_id}>") from e
+            
         record_time = datetime.now(timezone.utc)
         record_time_str = record_time.strftime("%Y-%m-%d %H:%M:%S.") + f"{record_time.microsecond // 1000:03d}"
         record_obj = record.model_dump()
@@ -178,59 +184,60 @@ class FDManager:
         @TODO comment
         """
 
-        db = get_current_dbc(is_async=True)
+        if cls._enable_persist_storage:
 
-        if record.curr_slice == 0:
-            try:
-                data = {
-                    'file_id'      : file_id,
-                    'source_path'  : record.desc.source_path,
-                    'target_path'  : record.desc.target_path,
-                    'stem'         : record.desc.stem,
-                    'ext'          : record.desc.ext,
-                    'size'         : record.desc.size,
-                    'stage'        : record.stage,
-                    'curr_slice'   : record.curr_slice,
-                    'total_slices' : record.total_slices,
-                    'total_chunks' : record.total_chunks
-                }
+            db = get_current_dbc(is_async=True)
 
-                # NOTE: await
-                await db.insert_async(
-                    table_name = cls._default_file_table_name,
-                    data       = data,
-                    returning  = False 
-                )
-            except Exception as e:
-                raise RuntimeError(f"Failed creating new record <{file_id}>") from e
-        else:
-            try:
-                attributes = {
-                    'source_path'  : record.desc.source_path,
-                    'target_path'  : record.desc.target_path,
-                    'size'         : record.desc.size,
-                    'stage'        : record.stage,
-                    'curr_slice'   : record.curr_slice,
-                    'total_chunks' : record.total_chunks
-                }
-                
-                # NOTE: await
-                await db.update_async(
-                    table_name   = cls._default_file_table_name,
-                    data         = attributes,
-                    where        = "file_id = %s",
-                    where_params = (file_id,),
-                    returning    = False
-                )
+            if record.curr_slice == 0:
+                try:
+                    data = {
+                        'file_id'      : file_id,
+                        'source_path'  : record.desc.source_path,
+                        'target_path'  : record.desc.target_path,
+                        'stem'         : record.desc.stem,
+                        'ext'          : record.desc.ext,
+                        'size'         : record.desc.size,
+                        'stage'        : record.stage,
+                        'curr_slice'   : record.curr_slice,
+                        'total_slices' : record.total_slices,
+                        'total_chunks' : record.total_chunks
+                    }
 
-            except Exception as e:
-                raise RuntimeError(f"Failed updating record: <{file_id}>") from e
-        
+                    # NOTE: await
+                    await db.insert_async(
+                        table_name = cls._default_file_table_name,
+                        data       = data,
+                        returning  = False 
+                    )
+                except Exception as e:
+                    raise RuntimeError(f"Failed creating new record <{file_id}>") from e
+            else:
+                try:
+                    attributes = {
+                        'source_path'  : record.desc.source_path,
+                        'target_path'  : record.desc.target_path,
+                        'size'         : record.desc.size,
+                        'stage'        : record.stage,
+                        'curr_slice'   : record.curr_slice,
+                        'total_chunks' : record.total_chunks
+                    }
+                    
+                    # NOTE: await
+                    await db.update_async(
+                        table_name   = cls._default_file_table_name,
+                        data         = attributes,
+                        where        = "file_id = %s",
+                        where_params = (file_id,),
+                        returning    = False
+                    )
+
+                except Exception as e:
+                    raise RuntimeError(f"Failed to Update Record: <{file_id}>") from e
+            
         record_time = datetime.now(timezone.utc)
         record_time_str = record_time.strftime("%Y-%m-%d %H:%M:%S.") + f"{record_time.microsecond // 1000:03d}"
         record_obj = record.model_dump()
         record_obj['complete_upload_time'] = record_time_str
-        # write_data_to_redis(record_obj)
         cls._cache_client.write_item(record_obj, id_field='file_id')
 
     @classmethod
@@ -239,18 +246,20 @@ class FDManager:
         @TODO comment
         """
 
-        # remove_file_record(file_id)
+        if cls._enable_persist_storage:
+            try:
+                db = get_current_dbc(is_async=False)
+                
+                db.remove(
+                    table_name   = cls._default_file_table_name,
+                    where        = "file_id = %s",
+                    where_params = (file_id,)
+                )
+            except Exception as e:
+                raise RuntimeError(f"Failed deleting data row from PostgreSQL: {e}")
+        
         cls._cache_client.remove_item(file_id)
-        try:
-            db = get_current_dbc(is_async=False)
-            
-            db.remove(
-                table_name   = cls._default_file_table_name,
-                where        = "file_id = %s",
-                where_params = (file_id,)
-            )
-        except Exception as e:
-            raise RuntimeError(f"Failed deleting data row from PostgreSQL: {e}")
+        
 
     
     @classmethod
@@ -259,19 +268,19 @@ class FDManager:
         @TODO comment
         """
 
-        # remove_file_record(file_id)
-        cls._cache_client.remove_item(file_id)
-        try:
-            db = get_current_dbc(is_async=True)
-            # NOTE: await
-            await db.remove_async(
-                table_name   = cls._default_file_table_name,
-                where        = "file_id = %s",
-                where_params = (file_id,)
-            )
-        except Exception as e:
-            raise RuntimeError(f"Failed deleting data row from PostgreSQL: {e}")
+        if cls._enable_persist_storage:        
+            try:
+                db = get_current_dbc(is_async=True)
+                # NOTE: await
+                await db.remove_async(
+                    table_name   = cls._default_file_table_name,
+                    where        = "file_id = %s",
+                    where_params = (file_id,)
+                )
+            except Exception as e:
+                raise RuntimeError(f"Failed deleting data row from PostgreSQL: {e}")
 
+        cls._cache_client.remove_item(file_id)
 
     @classmethod
     def query(
@@ -298,7 +307,8 @@ class FDManager:
                 stage        = data['stage'],
                 curr_slice   = data['curr_slice'],
                 total_slices = data['total_slices'],
-                total_chunks = data['total_chunks']
+                total_chunks = data['total_chunks'],
+                upload_time  = data['complete_upload_time']
             )
         
         return None
@@ -328,7 +338,8 @@ class FDManager:
                 stage        = data['stage'],
                 curr_slice   = data['curr_slice'],
                 total_slices = data['total_slices'],
-                total_chunks = data['total_chunks']
+                total_chunks = data['total_chunks'],
+                upload_time  = data['complete_upload_time']
             ))
             
         return records

@@ -1,14 +1,12 @@
 from mondoo.mdo.engine.handler    import run_gateway
-from mondoo.mdo.api.chatbot       import SYSTEM_PROMPT_DEFAULT
-from mondoo.mdo.generator.vanilla import (
-    response_in_message_with_tool,
-    query_message_history
-)
+from mondoo.mdo.generator.vanilla import (response_in_message_with_tool)
 
-from mondoo.service.rr.chat import (
+from .rr.chat import (
     Role, Message, Usage, Choice,
     ReqChatCompletion,
-    RespChatCompletionNoStream
+    RespChatCompletionNoStream,
+    RespMessageHistory,
+    RespDeleteMessageHistory
 )
 
 from contextlib        import asynccontextmanager
@@ -89,8 +87,11 @@ async def ip_filter_middleware(request: Request, call_next):
     return response
 
 
-@app.post('/api/v1/chat/completions')
-async def chat_completion(req: ReqChatCompletion):
+@app.post('/api/v1/chat/{context_id}/completions')
+async def chat_completion(
+    req        : ReqChatCompletion,
+    context_id : str
+):
     opts       = req.options.model_dump()
     stream_gen = None
     resp       = None
@@ -100,17 +101,6 @@ async def chat_completion(req: ReqChatCompletion):
         HTTPException(status_code=422, detail="Messages Should Not Be Empty!")
 
     messages = req.messages
-
-    # if req.context_id is None:
-    #     if messages[0].role != Role.SYSTEM:
-    #         message = Message(
-    #             role    = Role.SYSTEM,
-    #             content = SYSTEM_PROMPT_DEFAULT 
-    #         )
-    #         messages.insert(0, message)
-    #         logger.info("\"\nSystem Prompt Not Set. Using Default System Prompt:\n %s\n\"", SYSTEM_PROMPT_DEFAULT)
-    #     else:
-    #         logger.info("\"\nFrontend Set System Prompt:\n %s\n\"", messages[0].content)
 
     message_dicts = []
     
@@ -122,7 +112,7 @@ async def chat_completion(req: ReqChatCompletion):
             messages   = message_dicts, 
             opts       = opts, 
             model_type = req.model_type, 
-            context_id = req.context_id
+            context_id = context_id
         )
         return StreamingResponse(json_streamer(stream_gen), media_type='text/json')
 
@@ -175,6 +165,23 @@ async def chat_completion(req: ReqChatCompletion):
     return response
 
 
-@app.get('/api/v1/chat/{history_id}')
-def get_message_history(history_id : str):
-    return query_message_history(history_id)
+@app.get('/api/v1/chat/{context_id}')
+async def get_message_history(context_id : str):
+    messages = L.query_message_history(context_id)
+
+    return RespMessageHistory(
+        success    = True,
+        context_id = context_id,
+        messages   = messages,
+    )
+
+
+@app.delete('/api/v1/chat/{context_id}')
+async def del_message_history(context_id : str):
+    await L.clear_message_history(context_id)
+
+    return RespDeleteMessageHistory(
+        success    = True,
+        context_id = context_id,
+        deleted    = True,
+    )

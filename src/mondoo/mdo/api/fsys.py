@@ -1,10 +1,8 @@
-from ..engine.manager.file_descriptor       import FDManager
-from ..io.parser.generic     import FileDesc, FileStage, FileRecord
+from ..engine.manager.file_descriptor import FDManager
+from ..io.parser.generic              import FileStage, FileRecord
 
-import requests
 import logging
 import threading
-import json
 import os
 import shutil
 
@@ -54,7 +52,7 @@ def parse(
         
         for obj in objs:
             result_path = FDManager.dump(obj)
-            cache_path, num_chunks, ret_obj = FDManager.export(obj)
+            object_path, num_chunks, ret_obj = FDManager.export(obj)
             
             # send_request_to_pg('write_json',
             #     file_id   = file_id,
@@ -68,7 +66,7 @@ def parse(
     
     logger.info("\"Complete to Cache File with Method [%s]: [%s]\"", method, file_id)
 
-    return cache_path, num_chunks
+    return object_path, num_chunks
 
 
 async def do_parse_file_task_async(
@@ -85,7 +83,7 @@ async def do_parse_file_task_async(
     
     with file_task_lock:
         record.desc.target_path = target_path
-        record.stage            = FileStage.CACHED
+        record.stage            = FileStage.PARSED
         record.total_chunks     = num_chunks
         await FDManager.archive(file_id, record)
 

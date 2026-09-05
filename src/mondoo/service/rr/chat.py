@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing   import List, Dict, Optional, Literal
+from typing   import List, Dict, Optional, Literal, Any
 from enum     import Enum
 
 
@@ -67,7 +67,6 @@ class ReqChatCompletion(BaseModel):
     """
     model_type : Literal['local', 'remote']
     messages   : List[Message]
-    context_id : Optional[str]            = Field(None, description="Should incetive the internal memory?")
     options    : Optional[ReqChatOptions] = ReqChatOptions()
     
           
@@ -81,4 +80,16 @@ class RespChatCompletionNoStream(BaseModel):
     model_type         : str
     choices            : List[Choice]
     usage              : Optional[Usage] = None
-    system_fingerprint : Optional[str]   = None 
+    system_fingerprint : Optional[str]   = None
+
+
+class RespMessageHistory(BaseModel):
+    success    : bool
+    context_id : str
+    messages   : list[dict[str, Any]]
+
+
+class RespDeleteMessageHistory(BaseModel):
+    success    : bool
+    context_id : str
+    deleted    : bool
