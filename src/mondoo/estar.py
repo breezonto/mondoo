@@ -119,7 +119,8 @@ def command_launch(args):
     launch_apps(
         apps, 
         log_base_dir = log_base_dir,
-        storage_conf = cfgs.get('storage', None)
+        storage_conf = cfgs.get('storage', None),
+        asset_conf   = cfgs.get('assets', None)
     )
     
 

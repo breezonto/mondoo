@@ -1,33 +1,38 @@
-from .rr.upload import (
+from mondoo.mdo.engine.manager.file_descriptor import FDManager
+from mondoo.mdo.io.parser.generic              import FileStage, FileRecord
+
+from .rr.generic import RespStatus
+from .rr.upload  import (
     ReqCompleteUpload,
     RespUploading,
     RespFileStatus,
     ReqExtract
 )
 
-from .rr.generic   import RespStatus
-from ..mdo.engine.manager.file_descriptor import FDManager
-from ..mdo.io.parser.generic       import FileStage, FileRecord
-from mondoo.configurator   import get_global_config_value, SERVER_URL, ALLOWED_IPS
-
 from pathlib               import Path
 from datetime              import datetime, timezone
 from fastapi               import FastAPI, Form, HTTPException, Request
 from fastapi               import UploadFile
-from fastapi.responses     import HTMLResponse
 from fastapi.openapi.utils import get_openapi
 
 import mondoo.mdo.api.fsys as ifsys
 import os
-import asyncio
 import logging
 
 
 logger = logging.getLogger(__name__)
 
 
+SERVER_URL = os.getenv('PROXY_URL', None)
 logger.info(f"Proxy URLs: {SERVER_URL}")
+
+ALLOWED_IPS = os.getenv('ALLOWED_INCOMING_IPS', '127.0.0.1')
 logger.info(f"Allowed Incoming IPs: {ALLOWED_IPS}")
+
+PSQL_HOST = os.getenv('PSQL_HOST', None)
+PSQL_PORT = os.getenv('PSQL_PORT', None)
+PSQL_DB   = os.getenv('PSQL_DB', None)
+logger.info(f"PostgreSQL Connection: {PSQL_HOST}:{PSQL_PORT}@{PSQL_DB}")
 
 
 app = FastAPI(
@@ -36,8 +41,8 @@ app = FastAPI(
     openapi_url = "/openapi.json",
     servers     = [
         {
-            'url': SERVER_URL,
-            'description': "Nginx reverse proxy"
+            'url'         : SERVER_URL,
+            'description' : "Nginx reverse proxy"
         }
     ]
 )
