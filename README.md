@@ -61,4 +61,4 @@ Please refer to [estar-instructions](estar-instructions.md)
 
 ## Mondoo Frontend
 
-Comming soon...
+Please refers to [Mondoo Frontend Demo](https://github.com/breezonto/mondoo-frontend)
