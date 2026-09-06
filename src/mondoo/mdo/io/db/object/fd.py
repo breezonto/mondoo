@@ -8,12 +8,13 @@ while PostgreSQL stores its metadata.
 from mondoo.configurator import FD_TABLE
 
 from collections.abc import Generator
-from datetime import datetime
-from uuid     import UUID, uuid4
+from datetime        import datetime
+from uuid            import UUID, uuid4
+from pydantic        import BaseModel
 
-from sqlalchemy                     import BigInteger, DateTime, String, Text, create_engine
+from sqlalchemy                     import BigInteger, DateTime, String, Text, create_engine, select
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm                 import DeclarativeBase, Mapped, mapped_column, sessionmaker
+from sqlalchemy.orm                 import DeclarativeBase, Mapped, mapped_column, sessionmaker, Session
 
 import os
 
@@ -133,40 +134,32 @@ class FileDesc(Base):
     )
 
 
-from pydantic import BaseModel
-
 class FileCreate(BaseModel):
-    filename: str
-    size: int
-    content_type: str | None = None
-    checksum: str | None = None
-    storage_uri: str
+    filename     : str
+    size         : int
+    content_type : str | None = None
+    checksum     : str | None = None
+    storage_uri  : str
 
 
 class FileUpdate(BaseModel):
-    filename: str | None = None
-    checksum: str | None = None
+    filename : str | None = None
+    checksum : str | None = None
 
 
 class FileRead(BaseModel):
-    id: UUID
-    filename: str
-    size: int
-    content_type: str | None
-    checksum: str | None
-    storage_uri: str
-    created_at: datetime
-    modified_at: datetime | None
+    id           : UUID
+    filename     : str
+    size         : int
+    content_type : str | None
+    checksum     : str | None
+    storage_uri  : str
+    created_at   : datetime
+    modified_at  : datetime | None
 
     model_config = {
-        "from_attributes": True
+        'from_attributes': True
     }
-
-# repositories/file.py
-from uuid import UUID
-
-from sqlalchemy     import select
-from sqlalchemy.orm import Session
 
 
 class FileRepository:
