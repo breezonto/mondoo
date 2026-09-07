@@ -202,7 +202,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
         sql = """SELECT table_name FROM information_schema.tables 
                  WHERE table_schema = %s AND table_type = 'BASE TABLE' ORDER BY table_name"""
         result = self.execute_sql(sql, (schema,))
-        return [row["table_name"] for row in result.rows]
+        return [row['table_name'] for row in result.rows]
 
     def count(
         self, 
@@ -358,7 +358,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
     async def get_table_names(self, schema: str = "public") -> list[str]:
         result = await self.execute_sql("""SELECT table_name FROM information_schema.tables 
                                            WHERE table_schema = %s AND table_type = 'BASE TABLE' ORDER BY table_name""", (schema,))
-        return [row["table_name"] for row in result.rows]
+        return [row['table_name'] for row in result.rows]
 
     async def count(
         self, 
@@ -383,26 +383,36 @@ class _AsyncPostgresReaderImpl(PostgresReader):
         where_clause = f"WHERE {where}" if where else ""
         sql = f"DECLARE stream_cursor SCROLL CURSOR FOR SELECT {col_str} FROM {table} {where_clause}"
         
-        # 避免异步生成器与上下文管理器死锁，采用手动连接管理
+        # avoid deadlock between context manager and aync generator, 
+        # so manually manage the connection
         if not self._pool: await self.connect()
-        conn = await self._pool.acquire()
+
+        conn   = await self._pool.acquire()
         cursor = await conn.cursor(cursor_factory=AsyncRealDictCursor)
+
         _committed = False
 
         try:
             await cursor.execute("BEGIN")
+
             await cursor.execute(sql, where_params)
+
             while True:
                 await cursor.execute(f"FETCH {batch_size} FROM stream_cursor")
                 batch = await cursor.fetchall()
                 if not batch: break
                 yield [dict(row) for row in batch]
+
             await cursor.execute("CLOSE stream_cursor")
+
             await cursor.execute("COMMIT")
+
             _committed = True
         except Exception:
-            try: await cursor.execute("ROLLBACK")
-            except Exception: pass
+            try: 
+                await cursor.execute("ROLLBACK")
+            except Exception: 
+                pass
             raise
         finally:
             if not _committed:
