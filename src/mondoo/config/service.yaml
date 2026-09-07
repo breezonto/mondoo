@@ -33,12 +33,12 @@ apps:
     allowed_incoming_ips:
       - 127.0.0.1
 
-  file:
-    script: mondoo/service/file.py
+  library:
+    script: mondoo/service/library.py
     host: 127.0.0.1
     port: 10866
     proxy_url: 
-      - /nginx/file
+      - /nginx/library
     # log_dir: ./logs/file
     workers: 1
     storage: default

@@ -2,7 +2,7 @@ from mondoo.mdo.engine.manager.file_descriptor import FDManager
 from mondoo.mdo.io.parser.generic              import FileStage, FileRecord
 
 from .rr.generic import RespStatus
-from .rr.upload  import (
+from .rr.library  import (
     ReqCompleteUpload,
     RespUploading,
     RespFileStatus,

@@ -40,8 +40,6 @@ def select_apps(names : Optional[list[str]] = None):
         if name in names: selected[name] = app
 
     missing = set(names) - set(_apps.keys())
-    # print('names: ', names)
-    # print('_apps.keys():', _apps.keys())
     if missing:
         print(f"Warning: unknown app(s) {', '.join(missing)}")
     return selected
