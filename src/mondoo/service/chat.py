@@ -1,4 +1,4 @@
-from mondoo.mdo.engine.handler    import run_gateway
+from mondoo.mdo.engine.mcp_client    import run_gateway
 from mondoo.mdo.generator.vanilla import (response_in_message_with_tool)
 
 from .rr.chat import (
