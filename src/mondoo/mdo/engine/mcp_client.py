@@ -15,7 +15,7 @@ TOOLS = []
 logger = logging.getLogger(__name__)
 
 
-class GatewayHandler:
+class MCPGatewayClient:
     def __init__(self, session: ClientSession):
         self.session = session
 
@@ -76,7 +76,7 @@ class GatewayHandler:
         return result
 
 
-async def handler_wrapper(reader, writer, handler: GatewayHandler):
+async def handler_wrapper(reader, writer, handler: MCPGatewayClient):
     while True:
         data = await reader.readline()
         if not data:
@@ -114,7 +114,7 @@ async def run_gateway():
         async with ClientSession(read, write) as session:
             await session.initialize()
             
-            handler = GatewayHandler(session)
+            handler = MCPGatewayClient(session)
             server = await asyncio.start_unix_server(
                 lambda r, w: handler_wrapper(r, w, handler),
                 path = SOCK_PATH_4_GATEWAY
@@ -122,7 +122,3 @@ async def run_gateway():
             logger.info("\"MCP Gateway Server Launched\"")
             async with server:
                 await server.serve_forever()
-
-
-if __name__ == "__main__":
-    asyncio.run(run_gateway())

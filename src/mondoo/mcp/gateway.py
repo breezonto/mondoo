@@ -97,13 +97,15 @@ async def handle_client(reader, writer, session: ClientSession):
 
 class MCPGateway:
     def __init__(self):
-        self._sessions  = {}
+        self._sessions = {}
         self._ready    = {}
         self._tasks    = {}
         self._errors   = {}          # ← capture why each server died
 
     async def _connect_server_(self, name: str, command: list[str], sock_path) -> None:
-        """Connect to an MCP server and block until it's ready."""
+        """
+        Connect to an MCP server and block until it's ready.
+        """
         if name in self._tasks:
             raise RuntimeError(f"Server '{name}' is already registered")
 
@@ -145,23 +147,25 @@ class MCPGateway:
 
 
     async def list_all_tools(self):
-        """Aggregate tools from all servers"""
+        """
+        Aggregate tools from all MCP servers
+        """
+
         domains = {}
 
         for name, session in self._sessions.items():
             try:
-                tools = await session.list_tools()
+                result = await session.list_tools()
                 domains[name] = [
                     {
                         'name'        : t.name,
                         'description' : t.description,
                         'schema'      : t.inputSchema,
                     }
-                    for t in tools.tools
+                    for t in result.tools
                 ]
             except Exception as e:
                 domains[name] = f"ERROR: {str(e)}"
-
             
         return domains
 
