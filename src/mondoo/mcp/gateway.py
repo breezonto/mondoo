@@ -16,7 +16,9 @@ import sys
 import os
 
 config = setup_mcp_logging('gateway')
+
 logging.config.dictConfig(config)
+
 logger = logging.getLogger('mdo.engine.mcp.gateway')
 
 
@@ -49,7 +51,6 @@ async def handle_client(reader, writer, session: ClientSession):
             result = { 'error': str(e) }
 
         if hasattr(result, 'content'):
-            # typical MCP response: list of content blocks
             output = []
             for c in result.content:
                 if hasattr(c, 'text'):
@@ -102,7 +103,9 @@ class MCPGateway:
 
             async with stdio_client(params) as (read, write):
                 async with ClientSession(read, write) as session:
+
                     # Initialize the session (handshake with server)
+                    
                     await session.initialize()
                     self._sessions[name] = session
 
@@ -219,7 +222,7 @@ async def call(
     arguments : dict
 ):
     """
-    target format: "server-tool"
+    target format: 'server-tool'
     """
 
     try:
