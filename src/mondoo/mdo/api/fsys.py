@@ -70,15 +70,15 @@ def parse(
 
 
 async def do_parse_file_task_async(
-    file_id    : str,
-    path       : str,
-    record     : FileRecord,
-    parse_meth : str
+    file_id : str,
+    path    : str,
+    record  : FileRecord,
+    method  : str
 ):
     target_path, num_chunks = parse(
         file_id, 
         file_path = path,
-        method    = parse_meth
+        method    = method
     )
     
     with file_task_lock:

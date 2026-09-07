@@ -18,6 +18,7 @@ from fastapi.openapi.utils import get_openapi
 import mondoo.mdo.api.fsys as ifsys
 import os
 import logging
+import asyncio
 
 
 logger = logging.getLogger(__name__)
@@ -49,15 +50,15 @@ app = FastAPI(
 
 
 def launch_parse_file_task_thread(
-    file_id    : str,
-    path       : str,
-    record     : FileRecord,
-    parse_meth : str
+    file_id : str,
+    path    : str,
+    record  : FileRecord,
+    method  : str
 ):
     cache_path, num_chunks = ifsys.parse(
         file_id, 
-        file_path       = path,
-        method = parse_meth
+        file_path = path,
+        method    = method
     )
     
     with ifsys.file_task_lock:
@@ -264,12 +265,23 @@ async def extract(
     req     : ReqExtract
 ):
     record = FDManager.query(file_id)
-    await ifsys.do_parse_file_task_async(
-        file_id, 
-        record.desc.source_path, 
-        record, 
-        req.method_name
-    )
+    source_path = record.desc.source_path
+    if req.should_offline:
+        asyncio.create_task(
+            asyncio.to_thread(launch_parse_file_task_thread, 
+                file_id, 
+                source_path, 
+                record, 
+                req.parse_meth
+            )
+        )
+    else:
+        await ifsys.do_parse_file_task_async(
+            file_id, 
+            source_path, 
+            record, 
+            req.parse_meth
+        )
 
 
 
