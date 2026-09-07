@@ -1,0 +1,15 @@
+servers:
+  gateway:
+    name: gateway
+    script_path: 
+    sock: /tmp/mcp_gateway.sock
+
+  librarian:
+    name: librarian
+    script_path: 
+    sock: /tmp/mcp_librarian.sock
+  
+  kaleidoscope:
+    name: kaleido
+    script_path: 
+    sock: /tmp/mcp_kaleido.sock

@@ -49,7 +49,8 @@ def select_apps(names : Optional[list[str]] = None):
 def build_envs(
     app_conf     : dict,
     storage_conf : dict,
-    asset_conf   : dict
+    asset_conf   : dict,
+    mcp_conf     : dict
 ):
     env = os.environ.copy()
 
@@ -77,6 +78,10 @@ def build_envs(
         env['OBJECT_DIR'] = asset_conf['object_dir']
         env['SOURCE_DIR'] = asset_conf['source_dir']
 
+    # mcp configutation
+    if mcp_conf is not None:
+        pass
+
     return env
 
 
@@ -85,7 +90,8 @@ def launch_apps(
     *, 
     log_base_dir  : PathLike[str],
     storage_conf  : Optional[dict] = None,
-    asset_conf    : Optional[dict] = None
+    asset_conf    : Optional[dict] = None,
+    mcp_conf      : Optional[dict] = None
 ):
     for name, app in selected_apps.items():
         log_dir = os.path.join(log_base_dir, name)
@@ -98,7 +104,12 @@ def launch_apps(
         print(f"Starting {app['script']} on port {app['port']} -> logging to {log_path}")
         log_file = open(log_path, 'a')
 
-        env = build_envs(app, storage_conf, asset_conf)
+        env = build_envs(
+            app, 
+            storage_conf, 
+            asset_conf,
+            mcp_conf
+        )
         
         uvicorn_cmd = [
             'uv', 'run', '--no-sync',

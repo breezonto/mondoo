@@ -1,6 +1,4 @@
 import logging.config
-import yaml
-import requests
 import httpx
 import datetime
 
