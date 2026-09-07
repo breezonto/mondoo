@@ -5,7 +5,7 @@ from mondoo.mdo.io.db.psql  import (
 
 from mondoo.mdo.io.db.psql_reader import PostgresReader
 from mondoo.mdo.io.db.psql_writer import PostgresWriter
-from mondoo.mdo.core.common       import setup_mcp_logging
+from mondoo.mdo.utils.common      import setup_mcp_logging
 from mondoo.configurator          import BACKEND_BASE, DOCUMENTS_DIR, FD_TABLE
 
 from mcp.server.fastmcp import FastMCP
