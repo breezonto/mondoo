@@ -178,11 +178,11 @@ async def get_document_full_content(title: str) -> str:
 
     except FileNotFoundError as e:
         logger.error("Document [%s] Not Found: %s", title, str(e))
-        return f"Document '{title}' not found."
+        return f"Document '{title}' Not Found."
     
     except Exception as e:
         logger.error("Failed to Read Document: %s", str(e))
-        return f"Failed to read document: {str(e)}"
+        return f"Failed to Read Document: {str(e)}"
 
 
 @mcp.tool()
