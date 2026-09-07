@@ -10,11 +10,11 @@ import os
 import sys
 
 
-"""
-    @TODO comment
-"""
-
 def build_command_init_subparser(subparsers : _SubParsersAction):
+    """
+    @TODO comment
+    """
+
     p : ArgumentParser = subparsers.add_parser('init')
     p.add_argument(
         '--install',
@@ -31,11 +31,11 @@ def build_command_init_subparser(subparsers : _SubParsersAction):
     return subparsers
 
 
-"""
-    @TODO comment
-"""
-
 def command_init(args):
+    """
+    @TODO comment
+    """
+
     from .command.installer import install_database, setup_database
     if not args.install and not args.setup:
         print("No option selected, Please enter --install or --setup")
@@ -48,11 +48,11 @@ def command_init(args):
         setup_database()
 
 
-"""
-    @TODO comment
-"""
-
 def build_command_launch_subparser(subparsers : _SubParsersAction):
+    """
+    @TODO comment
+    """
+
     p : ArgumentParser = subparsers.add_parser('launch')
     p.add_argument(
         '-C', '--conf-file-paths',
@@ -72,11 +72,11 @@ def build_command_launch_subparser(subparsers : _SubParsersAction):
     return subparsers
 
 
-"""
-    @TODO comment
-"""
-
 def command_launch(args):
+    """
+    @TODO comment
+    """
+
     from .command.server import get_log_base_dir, select_apps, launch_apps
 
     if args.conf_file_paths is not None and len(args.conf_file_paths) > 0:
@@ -124,10 +124,11 @@ def command_launch(args):
     )
     
 
-"""
-    @TODO comment
-"""
 def build_command_run_subparser(subparsers : _SubParsersAction):
+    """
+    @TODO comment
+    """
+
     p : ArgumentParser = subparsers.add_parser('run')
     p.add_argument('service_name',      help = 'The would launched service app name')
     p.add_argument(
@@ -160,11 +161,11 @@ def build_command_run_subparser(subparsers : _SubParsersAction):
     return subparsers
 
 
-"""
-    @TODO comment
-"""
-
 def command_run(args):
+    """
+    @TODO comment
+    """
+
     from .command.server import run_app, select_apps
     apps = select_apps()
     name = args.service_name
@@ -177,11 +178,11 @@ def command_run(args):
     run_app(app)
     
 
-"""
-    @TODO comment
-""" 
-
 def build_command_stop_subparser(subparsers : _SubParsersAction):
+    """
+    @TODO comment
+    """ 
+
     p : ArgumentParser = subparsers.add_parser('stop')
     p.add_argument('service_name', type= str, help = 'The would stopped service app name')
     p.set_defaults(func=command_stop)
@@ -189,20 +190,21 @@ def build_command_stop_subparser(subparsers : _SubParsersAction):
     return subparsers
 
 
-"""
-    @TODO comment
-"""
-
 def command_stop(args):
+    """
+    @TODO comment
+    """
+
     from .command.server import select_apps, stop_apps
     apps = select_apps([args.service_name])
     stop_apps(apps)
 
 
-"""
-    @TODO comment
-"""
 def build_command_config_subparser(subparsers : _SubParsersAction):
+    """
+    @TODO comment
+    """
+
     p : ArgumentParser = subparsers.add_parser('config')
     p.add_argument(
         '--dump', '-D',
@@ -223,11 +225,11 @@ def build_command_config_subparser(subparsers : _SubParsersAction):
     return subparsers
 
 
-"""
-    @TODO comment
-"""
-
 def command_config(args):
+    """
+    @TODO comment
+    """
+    
     import shutil
     from mondoo.configurator import get_configuration_file_path
     if args.dump is not None:
