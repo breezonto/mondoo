@@ -16,14 +16,23 @@ logger = logging.getLogger(__name__)
 
 
 class PostgresWriter:
-    def __new__(cls, config: 'PostgresConfig', is_async: bool = False):
+    def __new__(
+        cls, 
+        config   : 'PostgresConfig', 
+        is_async : bool = False
+    ):
         if is_async:
             return object.__new__(_AsyncPostgresWriterImpl)
         return object.__new__(_SyncPostgresWriterImpl)
     
 
 class _SyncPostgresWriterImpl(PostgresWriter):
-    def __init__(self, config: 'PostgresConfig', *, is_async: bool = False):
+    def __init__(
+        self, 
+        config : 'PostgresConfig', 
+        *, 
+        is_async : bool = False
+    ):
         self.config = config
         self._pool: pool.ThreadedConnectionPool | None = None
 
@@ -64,7 +73,8 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     # ───────────── INSERT ─────────────
     def _insert_(
         self, 
-        table     : str, 
+        table : str,
+        *, 
         data      : dict, 
         returning : bool = False
     ) -> Optional[dict]:
@@ -89,7 +99,8 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     
     def insert(
         self, 
-        table     : str, 
+        table : str,
+        *, 
         data      : dict,
         json_col  : Optional[str]  = None,
         json_data : Optional[dict] = None, 
@@ -125,7 +136,12 @@ class _SyncPostgresWriterImpl(PostgresWriter):
 
 
     # ───────────── BATCH INSERT ─────────────
-    def insert_many(self, table: str, rows: list[dict]) -> None:
+    def insert_many(
+        self, 
+        table : str,
+        *, 
+        rows : list[dict]
+    ) -> None:
         """
         @TODO comment
         """
@@ -147,7 +163,8 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     # ───────────── UPDATE ─────────────
     def update(
         self,
-        table        : str,
+        table : str,
+        *,
         data         : dict,
         where        : str,
         where_params : tuple = (),
@@ -172,7 +189,8 @@ class _SyncPostgresWriterImpl(PostgresWriter):
 
     def update_json(
         self,
-        table        : str,
+        table : str,
+        *,
         json_column  : str,
         json_data    : dict,
         where        : str,
@@ -187,7 +205,12 @@ class _SyncPostgresWriterImpl(PostgresWriter):
         return self.update(table, data, where, where_params, returning)
     
     # ───────────── DELETE ─────────────
-    def delete(self, table: str, where: str, where_params: tuple = ()) -> int:
+    def delete(self, 
+        table : str, 
+        *,
+        where        : str, 
+        where_params : tuple = ()
+    ) -> int:
         """
         @TODO comment
         """
@@ -201,7 +224,8 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     # ───────────── UPSERT ─────────────
     def upsert(
         self,
-        table            : str,
+        table : str,
+        *,
         data             : dict,
         conflict_columns : list[str],
         returning        : bool = False,
@@ -240,7 +264,12 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     
 
 class _AsyncPostgresWriterImpl(PostgresWriter):
-    def __init__(self, config: 'PostgresConfig', *, is_async: bool = False):
+    def __init__(
+        self, 
+        config : 'PostgresConfig', 
+        *, 
+        is_async: bool = False
+    ):
         """
         @TODO comment
         """
@@ -308,7 +337,8 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
     # ───────── INSERT ─────────
     async def _insert_(
         self, 
-        table     : str, 
+        table : str,
+        *, 
         data      : dict, 
         returning : bool = False
     ):
@@ -335,7 +365,8 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
     
     async def insert(
         self, 
-        table     : str, 
+        table : str,
+        *,
         data      : dict,
         json_col  : Optional[str]  = None,
         json_data : Optional[dict] = None, 
@@ -367,12 +398,12 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
     # ───────── UPDATE ─────────
     async def update(
         self, 
-        table, 
+        table : str, 
         *,
         data         : dict, 
         where        : str, 
-        where_params : tuple =(), 
-        returning = False
+        where_params : tuple = (), 
+        returning    : bool  = False
     ):
         """
         @TODO comment
