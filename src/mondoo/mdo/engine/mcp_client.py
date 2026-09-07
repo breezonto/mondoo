@@ -45,8 +45,6 @@ class MCPGatewayClient:
         else:
             return { 'error': f"Unknown cmd: {cmd}"}
 
-    # --- commands ---
-
     async def _list_tools(self):
         """
         Call gateway.list_all_tools

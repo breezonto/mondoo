@@ -1,4 +1,12 @@
 # --- gateway.py ---
+from mondoo.configurator    import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_LIBRARIAN
+from mondoo.mdo.core.common import setup_mcp_logging
+
+from mcp.server.fastmcp import FastMCP
+from mcp.client.session import ClientSession
+from mcp.client.stdio   import stdio_client, StdioServerParameters
+from os                 import PathLike
+
 import asyncio
 import anyio
 import logging
@@ -6,13 +14,6 @@ import logging.config
 import json
 import sys
 import os
-
-from mcp.server.fastmcp     import FastMCP
-from mcp.client.session     import ClientSession
-from mcp.client.stdio       import stdio_client, StdioServerParameters
-from mondoo.configurator    import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_LIBRARIAN
-from mondoo.mdo.core.common import setup_mcp_logging
-
 
 config = setup_mcp_logging('gateway')
 logging.config.dictConfig(config)
@@ -74,14 +75,19 @@ class MCPGateway:
         self._tasks    = {}
         self._errors   = {} # capture why each server died
 
-    async def _connect_server_(self, name: str, command: list[str], sock_path) -> None:
+    async def _connect_server_(
+        self, 
+        name      : str, 
+        command   : list[str], 
+        sock_path : PathLike[str]
+    ) -> None:
         """
         Connect to an MCP server and block until it's ready.
         """
         if name in self._tasks:
             raise RuntimeError(f"Server [{name}] is already registered")
 
-        ready_event = asyncio.Event()       # <-- signals readiness
+        ready_event = asyncio.Event()
         self._ready[name] = False
 
         async def _runner():
@@ -141,7 +147,12 @@ class MCPGateway:
             
         return domains
 
-    async def call_tool(self, server: str, tool: str, args: dict):
+    async def call_tool(
+        self, 
+        server : str, 
+        tool   : str, 
+        args   : dict
+    ):
         if server not in self._sessions:
             return f"Server [{server}] Not Found"
 
@@ -173,7 +184,8 @@ async def startup():
     # )
     # logger.info("Gateway Connected to Server: Kaleido")
     
-    await GATEWAY._connect_server_('librarian', 
+    await GATEWAY._connect_server_(
+        'librarian', 
         command   = [
             sys.executable,
             '-m',
