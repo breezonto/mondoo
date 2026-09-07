@@ -18,7 +18,6 @@ from dataclasses     import dataclass, field
 from psycopg2.extras import RealDictCursor as AsyncRealDictCursor
 
 import logging
-import asyncio
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool as pool
@@ -156,7 +155,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
         page_size    : int = 100
     ) -> 'QueryResult':
         
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         where_clause = f"WHERE {where}" if where else ""
         order_clause = f"ORDER BY {order_by}" if order_by else ""
         
@@ -183,7 +182,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
         id_column : str = "id", 
         columns   : Optional[list[str]] = None
     ) -> Optional[dict]:
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         sql = f"SELECT {col_str} FROM {table} WHERE {id_column} = %s LIMIT 1"
         result = self.execute_sql(sql, (record_id,))
         return result.rows[0] if result.rows else None
@@ -224,7 +223,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
         where_params : tuple = (), 
         batch_size   : int = 1000
     ) -> Generator[list[dict], None, None]:
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         where_clause = f"WHERE {where}" if where else ""
         sql = f"DECLARE stream_cursor SCROLL CURSOR FOR SELECT {col_str} FROM {table} {where_clause}"
         
@@ -315,7 +314,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
         page_size    : int = 100
     ) -> 'QueryResult':
         
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         where_clause = f"WHERE {where}" if where else ""
         order_clause = f"ORDER BY {order_by}" if order_by else ""
         
@@ -341,7 +340,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
         id_column : str = 'id', 
         columns   : Optional[list[str]] = None
     ) -> Optional[dict]:
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         result = await self.execute_sql(f"SELECT {col_str} FROM {table} WHERE {id_column} = %s LIMIT 1", (record_id,))
         return result.rows[0] if result.rows else None
 
@@ -380,7 +379,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
         where_params : tuple = (), 
         batch_size   : int = 1000
     ) -> AsyncGenerator[list[dict], None]:
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         where_clause = f"WHERE {where}" if where else ""
         sql = f"DECLARE stream_cursor SCROLL CURSOR FOR SELECT {col_str} FROM {table} {where_clause}"
         

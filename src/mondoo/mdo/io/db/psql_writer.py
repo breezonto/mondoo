@@ -1,21 +1,17 @@
+from .psql         import ( PostgresConfig )
+from .psql_reader  import PostgresReader
+
+from abc             import ABC, abstractmethod
+from contextlib      import asynccontextmanager, contextmanager
+from typing          import Any, AsyncGenerator, Generator, Optional, Union
+from dataclasses     import dataclass, field
+from psycopg2.extras import RealDictCursor as AsyncRealDictCursor, Json
+
 import logging
-import asyncio
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool as pool
 import aiopg
-
-from abc                      import ABC, abstractmethod
-from contextlib               import asynccontextmanager, contextmanager
-from typing                   import Any, AsyncGenerator, Generator, Optional, Union
-from dataclasses              import dataclass, field
-from psycopg2.extras          import RealDictCursor as AsyncRealDictCursor, Json
-from .psql import (
-    PostgresConfig,
-    PSQL_HOST, PSQL_PORT, PSQL_DB, PSQL_USER, PSQL_PSSWD
-)
-
-from .psql_reader  import PostgresReader
 
 # ──────────────────────────── Logging Config ────────────────────────────
 logger = logging.getLogger(__name__)
@@ -78,7 +74,7 @@ class _SyncPostgresWriterImpl(PostgresWriter):
         values = tuple(data.values())
 
         cols = ', '.join(keys)
-        placeholders = ", ".join(["%s"] * len(keys))
+        placeholders = ', '.join(["%s"] * len(keys))
         sql = f"INSERT INTO {table} ({cols}) VALUES ({placeholders})"
         if returning:
             sql += " RETURNING *"
@@ -129,8 +125,8 @@ class _SyncPostgresWriterImpl(PostgresWriter):
             return
 
         keys = rows[0].keys()
-        cols = ", ".join(keys)
-        placeholders = ", ".join(["%s"] * len(keys))
+        cols = ', '.join(keys)
+        placeholders = ', '.join(["%s"] * len(keys))
 
         sql = f"INSERT INTO {table} ({cols}) VALUES ({placeholders})"
 
@@ -148,7 +144,7 @@ class _SyncPostgresWriterImpl(PostgresWriter):
         where_params : tuple = (),
         returning    : bool = False,
     ) -> list[dict]:
-        set_clause = ", ".join([f"{k} = %s" for k in data.keys()])
+        set_clause = ', '.join([f"{k} = %s" for k in data.keys()])
         params = tuple(data.values()) + where_params
 
         sql = f"UPDATE {table} SET {set_clause} WHERE {where}"
@@ -192,14 +188,14 @@ class _SyncPostgresWriterImpl(PostgresWriter):
         keys = data.keys()
         values = tuple(data.values())
 
-        cols = ", ".join(keys)
-        placeholders = ", ".join(["%s"] * len(keys))
+        cols = ', '.join(keys)
+        placeholders = ', '.join(["%s"] * len(keys))
 
-        update_clause = ", ".join(
+        update_clause = ', '.join(
             [f"{k} = EXCLUDED.{k}" for k in keys if k not in conflict_columns]
         )
 
-        conflict = ", ".join(conflict_columns)
+        conflict = ', '.join(conflict_columns)
 
         sql = f"""
         INSERT INTO {table} ({cols})
@@ -274,8 +270,8 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
         keys   = data.keys()
         values = tuple(data.values())
 
-        cols = ", ".join(keys)
-        placeholders = ", ".join(['%s'] * len(keys))
+        cols = ', '.join(keys)
+        placeholders = ', '.join(['%s'] * len(keys))
 
         sql = f"INSERT INTO {table} ({cols}) VALUES ({placeholders})"
         if returning:
@@ -317,7 +313,7 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
     
     # ───────── UPDATE ─────────
     async def update(self, table, data, where, where_params=(), returning=False):
-        set_clause = ", ".join([f"{k} = %s" for k in data.keys()])
+        set_clause = ', '.join([f"{k} = %s" for k in data.keys()])
         params = tuple(data.values()) + where_params
 
         sql = f"UPDATE {table} SET {set_clause} WHERE {where}"
@@ -357,11 +353,11 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
         keys = data.keys()
         values = tuple(data.values())
 
-        cols = ", ".join(keys)
-        placeholders = ", ".join(["%s"] * len(keys))
-        conflict = ", ".join(conflict_columns)
+        cols = ', '.join(keys)
+        placeholders = ', '.join(["%s"] * len(keys))
+        conflict = ', '.join(conflict_columns)
 
-        update_clause = ", ".join(
+        update_clause = ', '.join(
             [f"{k} = EXCLUDED.{k}" for k in keys if k not in conflict_columns]
         )
 
