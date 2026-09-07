@@ -5,14 +5,29 @@ This module defines the database representation of a file descriptor.
 The actual file content is stored externally (e.g. filesystem, OSS/S3),
 while PostgreSQL stores its metadata.
 """
+from mondoo.configurator import FD_TABLE
 
-from sqlalchemy     import create_engine
-from sqlalchemy.orm import sessionmaker
+from collections.abc import Generator
+from datetime        import datetime
+from uuid            import UUID, uuid4
+from pydantic        import BaseModel
+
+from sqlalchemy                     import BigInteger, DateTime, String, Text, create_engine, select
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm                 import DeclarativeBase, Mapped, mapped_column, sessionmaker, Session
+
+import os
+
+PSQL_HOST  = os.getenv('PSQL_HOST', 'localhost')
+PSQL_PORT  = os.getenv('PSQL_PORT', 5432)
+PSQL_DB    = list(set(os.getenv('PSQL_DB').split(',')))[0]
+PSQL_USER  = os.getenv('PSQL_USER', None)
+PSQL_PSSWD = os.getenv('PSQL_PWSD', None)
 
 
 DATABASE_URL = (
     "postgresql+psycopg2://"
-    "username:password@localhost:5432/mydatabase"
+    f"{PSQL_USER}:{PSQL_PSSWD}@{PSQL_HOST}:{PSQL_PORT}/{PSQL_DB}"
 )
 
 engine = create_engine(
@@ -26,7 +41,6 @@ session_local = sessionmaker(
     autocommit = False,
 )
 
-from collections.abc import Generator
 
 def get_db() -> Generator[Session, None, None]:
     db = session_local()
@@ -35,16 +49,6 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-
-
-from mondoo.configurator import FD_TABLE
-
-from datetime import datetime
-from uuid     import UUID, uuid4
-
-from sqlalchemy                     import BigInteger, DateTime, String, Text
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm                 import DeclarativeBase, Mapped, mapped_column
 
 
 class Base(DeclarativeBase):
@@ -130,40 +134,32 @@ class FileDesc(Base):
     )
 
 
-from pydantic import BaseModel
-
 class FileCreate(BaseModel):
-    filename: str
-    size: int
-    content_type: str | None = None
-    checksum: str | None = None
-    storage_uri: str
+    filename     : str
+    size         : int
+    content_type : str | None = None
+    checksum     : str | None = None
+    storage_uri  : str
 
 
 class FileUpdate(BaseModel):
-    filename: str | None = None
-    checksum: str | None = None
+    filename : str | None = None
+    checksum : str | None = None
 
 
 class FileRead(BaseModel):
-    id: UUID
-    filename: str
-    size: int
-    content_type: str | None
-    checksum: str | None
-    storage_uri: str
-    created_at: datetime
-    modified_at: datetime | None
+    id           : UUID
+    filename     : str
+    size         : int
+    content_type : str | None
+    checksum     : str | None
+    storage_uri  : str
+    created_at   : datetime
+    modified_at  : datetime | None
 
     model_config = {
-        "from_attributes": True
+        'from_attributes': True
     }
-
-# repositories/file.py
-from uuid import UUID
-
-from sqlalchemy     import select
-from sqlalchemy.orm import Session
 
 
 class FileRepository:
@@ -175,11 +171,11 @@ class FileRepository:
     ) -> FileDesc:
 
         fd = FileDesc(
-            filename=data.filename,
-            size=data.size,
-            content_type=data.content_type,
-            checksum=data.checksum,
-            storage_uri=data.storage_uri,
+            filename     = data.filename,
+            size         = data.size,
+            content_type = data.content_type,
+            checksum     = data.checksum,
+            storage_uri  = data.storage_uri,
         )
 
         db.add(fd)

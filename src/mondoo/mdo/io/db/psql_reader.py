@@ -18,7 +18,6 @@ from dataclasses     import dataclass, field
 from psycopg2.extras import RealDictCursor as AsyncRealDictCursor
 
 import logging
-import asyncio
 import psycopg2
 import psycopg2.extras
 import psycopg2.pool as pool
@@ -32,11 +31,11 @@ logger = logging.getLogger(__name__)
 class QueryResult:
     """Query Result Wrapper"""
 
-    columns: list[str] = field(default_factory=list)
-    rows: list[dict]   = field(default_factory=list)
-    total_count: Optional[int] = None
-    page: Optional[int] = None
-    page_size: Optional[int] = None
+    columns     : list[str] = field(default_factory=list)
+    rows        : list[dict]   = field(default_factory=list)
+    total_count : Optional[int] = None
+    page        : Optional[int] = None
+    page_size   : Optional[int] = None
 
     @property
     def row_count(self) -> int:
@@ -90,13 +89,13 @@ class _SyncPostgresReaderImpl(PostgresReader):
             return
         try:
             self._pool = pool.ThreadedConnectionPool(
-                minconn=self.config.min_connections,
-                maxconn=self.config.max_connections,
-                host=self.config.host,
-                port=self.config.port,
-                dbname=self.config.database,
-                user=self.config.user,
-                password=self.config.password,
+                minconn  = self.config.min_connections,
+                maxconn  = self.config.max_connections,
+                host     = self.config.host,
+                port     = self.config.port,
+                dbname   = self.config.database,
+                user     = self.config.user,
+                password = self.config.password,
             )
             logger.info("✅ Connection pool established [%s:%d/%s]", self.config.host, self.config.port, self.config.database)
         except psycopg2.Error as e:
@@ -156,7 +155,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
         page_size    : int = 100
     ) -> 'QueryResult':
         
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         where_clause = f"WHERE {where}" if where else ""
         order_clause = f"ORDER BY {order_by}" if order_by else ""
         
@@ -183,7 +182,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
         id_column : str = "id", 
         columns   : Optional[list[str]] = None
     ) -> Optional[dict]:
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         sql = f"SELECT {col_str} FROM {table} WHERE {id_column} = %s LIMIT 1"
         result = self.execute_sql(sql, (record_id,))
         return result.rows[0] if result.rows else None
@@ -203,7 +202,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
         sql = """SELECT table_name FROM information_schema.tables 
                  WHERE table_schema = %s AND table_type = 'BASE TABLE' ORDER BY table_name"""
         result = self.execute_sql(sql, (schema,))
-        return [row["table_name"] for row in result.rows]
+        return [row['table_name'] for row in result.rows]
 
     def count(
         self, 
@@ -224,7 +223,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
         where_params : tuple = (), 
         batch_size   : int = 1000
     ) -> Generator[list[dict], None, None]:
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         where_clause = f"WHERE {where}" if where else ""
         sql = f"DECLARE stream_cursor SCROLL CURSOR FOR SELECT {col_str} FROM {table} {where_clause}"
         
@@ -315,7 +314,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
         page_size    : int = 100
     ) -> 'QueryResult':
         
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         where_clause = f"WHERE {where}" if where else ""
         order_clause = f"ORDER BY {order_by}" if order_by else ""
         
@@ -341,7 +340,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
         id_column : str = 'id', 
         columns   : Optional[list[str]] = None
     ) -> Optional[dict]:
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         result = await self.execute_sql(f"SELECT {col_str} FROM {table} WHERE {id_column} = %s LIMIT 1", (record_id,))
         return result.rows[0] if result.rows else None
 
@@ -359,7 +358,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
     async def get_table_names(self, schema: str = "public") -> list[str]:
         result = await self.execute_sql("""SELECT table_name FROM information_schema.tables 
                                            WHERE table_schema = %s AND table_type = 'BASE TABLE' ORDER BY table_name""", (schema,))
-        return [row["table_name"] for row in result.rows]
+        return [row['table_name'] for row in result.rows]
 
     async def count(
         self, 
@@ -380,30 +379,40 @@ class _AsyncPostgresReaderImpl(PostgresReader):
         where_params : tuple = (), 
         batch_size   : int = 1000
     ) -> AsyncGenerator[list[dict], None]:
-        col_str = ", ".join(columns) if columns else "*"
+        col_str = ', '.join(columns) if columns else '*'
         where_clause = f"WHERE {where}" if where else ""
         sql = f"DECLARE stream_cursor SCROLL CURSOR FOR SELECT {col_str} FROM {table} {where_clause}"
         
-        # 避免异步生成器与上下文管理器死锁，采用手动连接管理
+        # avoid deadlock between context manager and aync generator, 
+        # so manually manage the connection
         if not self._pool: await self.connect()
-        conn = await self._pool.acquire()
+
+        conn   = await self._pool.acquire()
         cursor = await conn.cursor(cursor_factory=AsyncRealDictCursor)
+
         _committed = False
 
         try:
             await cursor.execute("BEGIN")
+
             await cursor.execute(sql, where_params)
+
             while True:
                 await cursor.execute(f"FETCH {batch_size} FROM stream_cursor")
                 batch = await cursor.fetchall()
                 if not batch: break
                 yield [dict(row) for row in batch]
+
             await cursor.execute("CLOSE stream_cursor")
+
             await cursor.execute("COMMIT")
+
             _committed = True
         except Exception:
-            try: await cursor.execute("ROLLBACK")
-            except Exception: pass
+            try: 
+                await cursor.execute("ROLLBACK")
+            except Exception: 
+                pass
             raise
         finally:
             if not _committed:
