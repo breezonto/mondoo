@@ -86,7 +86,7 @@ class _SyncPostgresWriterImpl(PostgresWriter):
         values = tuple(data.values())
 
         cols = ', '.join(keys)
-        placeholders = ', '.join(["%s"] * len(keys))
+        placeholders = ', '.join(['%s'] * len(keys))
         sql = f"INSERT INTO {table} ({cols}) VALUES ({placeholders})"
         if returning:
             sql += " RETURNING *"
@@ -151,7 +151,7 @@ class _SyncPostgresWriterImpl(PostgresWriter):
 
         keys = rows[0].keys()
         cols = ', '.join(keys)
-        placeholders = ', '.join(["%s"] * len(keys))
+        placeholders = ', '.join(['%s'] * len(keys))
 
         sql = f"INSERT INTO {table} ({cols}) VALUES ({placeholders})"
 
@@ -238,7 +238,7 @@ class _SyncPostgresWriterImpl(PostgresWriter):
         values = tuple(data.values())
 
         cols = ', '.join(keys)
-        placeholders = ', '.join(["%s"] * len(keys))
+        placeholders = ', '.join(['%s'] * len(keys))
 
         update_clause = ', '.join(
             [f"{k} = EXCLUDED.{k}" for k in keys if k not in conflict_columns]
@@ -468,7 +468,7 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
         values = tuple(data.values())
 
         cols = ', '.join(keys)
-        placeholders = ', '.join(["%s"] * len(keys))
+        placeholders = ', '.join(['%s'] * len(keys))
         conflict = ', '.join(conflict_columns)
 
         update_clause = ', '.join(
