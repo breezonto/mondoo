@@ -15,7 +15,7 @@ from fastapi               import FastAPI, Form, HTTPException, Request
 from fastapi               import UploadFile
 from fastapi.openapi.utils import get_openapi
 
-import mondoo.mdo.api.fsys as ifsys
+import mondoo.mdo.api.fs as ifsys
 import os
 import logging
 import asyncio
