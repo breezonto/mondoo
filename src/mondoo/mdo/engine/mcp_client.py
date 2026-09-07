@@ -1,7 +1,8 @@
-from mcp.client.stdio         import stdio_client, StdioServerParameters
-from mcp.client.session       import ClientSession
 from mondoo.configurator import SOCK_PATH_4_GATEWAY, END_FRAME
-from pathlib                  import Path
+
+from mcp.client.stdio   import stdio_client, StdioServerParameters
+from mcp.client.session import ClientSession
+from pathlib            import Path
 
 import asyncio
 import json
@@ -20,7 +21,7 @@ class MCPGatewayClient:
         self.session = session
 
     async def handle(self, req: dict):
-        cmd = req.get("cmd")
+        cmd = req.get('cmd')
 
         if cmd == 'list_tools':
             return await self._list_tools()
@@ -28,7 +29,6 @@ class MCPGatewayClient:
         elif cmd == 'call':
             result = await self._call(req)
             if hasattr(result, 'content'):
-                # typical MCP response: list of content blocks
                 output = []
                 for c in result.content:
                     if hasattr(c, 'text'):
@@ -48,7 +48,10 @@ class MCPGatewayClient:
     # --- commands ---
 
     async def _list_tools(self):
-        """Call gateway.list_all_tools"""
+        """
+        Call gateway.list_all_tools
+        """
+
         result = await self.session.call_tool('list_all_tools', None)
         result = json.loads(result.content[0].text)
         return result
@@ -57,14 +60,12 @@ class MCPGatewayClient:
         """
         Call a tool via gateway using target = 'server.tool'
         """
+
         target = req.get('target')
         args   = req.get('args', {})
 
         if not target:
             return {'error': "Missing 'target'"}
-
-        # call gateway tool
-        # server, tool = target.split(".")
 
         result = await self.session.call_tool(
             'call',
@@ -76,7 +77,7 @@ class MCPGatewayClient:
         return result
 
 
-async def handler_wrapper(reader, writer, handler: MCPGatewayClient):
+async def _handler_wrapper_(reader, writer, handler: MCPGatewayClient):
     while True:
         data = await reader.readline()
         if not data:
@@ -111,9 +112,11 @@ async def run_gateway():
             
             handler = MCPGatewayClient(session)
             server = await asyncio.start_unix_server(
-                lambda r, w: handler_wrapper(r, w, handler),
+                lambda r, w: _handler_wrapper_(r, w, handler),
                 path = SOCK_PATH_4_GATEWAY
             )
+
             logger.info("\"MCP Gateway Server Launched\"")
+
             async with server:
                 await server.serve_forever()

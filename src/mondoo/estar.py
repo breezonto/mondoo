@@ -119,7 +119,8 @@ def command_launch(args):
         apps, 
         log_base_dir = log_base_dir,
         storage_conf = cfgs.get('storage', None),
-        asset_conf   = cfgs.get('assets', None)
+        asset_conf   = cfgs.get('assets', None),
+        mcp_conf     = cfgs.get('mcp', None)
     )
     
 

@@ -22,34 +22,6 @@ logger = logging.getLogger('mdo.engine.mcp.gateway')
 mcp = FastMCP('gateway')
 
 
-def get_deepseek_spec(desc):
-    result = []
-    for t in desc['tools']:
-        result.append({
-            'type': 'function',
-            'function' : {
-                'name'        : t['name'],
-                'description' : t['description'] or "",
-                'parameters'  : t['schema']
-            }
-        })
-
-    return result
-
-
-
-def get_help_spec(tools):
-    result = []
-    for t in tools.tools:
-        result.append(
-            {
-                'name'   : t.name,
-                'desc'   : t.description,
-                'params' : t.inputSchema 
-            }
-        )
-
-
 async def handle_client(reader, writer, session: ClientSession):
     while True:
         data = await reader.readline()
@@ -67,7 +39,7 @@ async def handle_client(reader, writer, session: ClientSession):
                 result = tool_names
 
             elif cmd in tool_names:
-                result = await session.call_tool(cmd, req.get("args", {}))
+                result = await session.call_tool(cmd, req.get('args', {}))
 
             else:
                 result = {'error': f"unknown command: {cmd}"}
@@ -100,14 +72,14 @@ class MCPGateway:
         self._sessions = {}
         self._ready    = {}
         self._tasks    = {}
-        self._errors   = {}          # ← capture why each server died
+        self._errors   = {} # capture why each server died
 
     async def _connect_server_(self, name: str, command: list[str], sock_path) -> None:
         """
         Connect to an MCP server and block until it's ready.
         """
         if name in self._tasks:
-            raise RuntimeError(f"Server '{name}' is already registered")
+            raise RuntimeError(f"Server [{name}] is already registered")
 
         ready_event = asyncio.Event()       # <-- signals readiness
         self._ready[name] = False
@@ -171,22 +143,22 @@ class MCPGateway:
 
     async def call_tool(self, server: str, tool: str, args: dict):
         if server not in self._sessions:
-            return f"Server '{server}' not found"
+            return f"Server [{server}] Not Found"
 
         if not self._ready.get(server):
-            err = self._errors.get(server, "unknown reason")
-            return f"Server '{server}' is dead: {err}"
+            err = self._errors.get(server, "Unknown Reason")
+            return f"Server [{server}] Is Dead: {err}"
 
-        session = self._sessions[server]
+        curr_session = self._sessions[server]
 
         try:
-            result = await session.call_tool(tool, args)
+            result = await curr_session.call_tool(tool, args)
             return result
         except Exception as e:
-            return f"Call failed: {type(e).__name__}: {e}"
+            return f"Call Failed: {type(e).__name__}: {e}"
 
 
-gateway = MCPGateway()
+GATEWAY = MCPGateway()
 
 
 # lifecycle management
@@ -201,10 +173,10 @@ async def startup():
     # )
     # logger.info("Gateway Connected to Server: Kaleido")
     
-    await gateway._connect_server_('librarian', 
+    await GATEWAY._connect_server_('librarian', 
         command   = [
             sys.executable,
-            "-m",
+            '-m',
             'mondoo.mcp.server.librarian'
         ],
         sock_path = SOCK_PATH_4_LIBRARIAN
@@ -215,7 +187,7 @@ async def startup():
 @mcp.tool()
 async def list_all_tools() -> dict:
     """List all tools from all MCP servers"""
-    domains = await gateway.list_all_tools()
+    domains = await GATEWAY.list_all_tools()
     result = []
     for domain_name, tool_specs in domains.items():
         for tool_spec in tool_specs:
@@ -231,18 +203,19 @@ async def list_all_tools() -> dict:
 
 @mcp.tool()
 async def call(
-    target: str,
-    arguments: dict
+    target    : str,
+    arguments : dict
 ):
     """
     target format: "server-tool"
     """
+
     try:
         server, tool = target.split('-', 1)
     except ValueError:
         return {"error": f"Invalid target: {target}"}
 
-    return await gateway.call_tool(server, tool, arguments)
+    return await GATEWAY.call_tool(server, tool, arguments)
 
 
 async def main():
