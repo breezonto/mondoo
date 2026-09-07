@@ -1,5 +1,5 @@
 from os      import PathLike
-from typing  import List, Optional, Dict
+from typing  import Optional
 from pathlib import Path
 import os
 import yaml
@@ -15,7 +15,7 @@ MCP_LOGGING_YAML_PATH = os.path.join(Path(__file__).resolve().parent, 'config/in
 DOCUMENTS_DIR     = '/home/guard/workspace/documents'
 
 
-def load_yaml_config(conf_path : PathLike[str]) -> Dict:
+def load_yaml_config(conf_path : PathLike[str]) -> dict:
     with open(conf_path, 'r', encoding='utf-8') as f:
         cfg = yaml.safe_load(f)
     return cfg
@@ -107,7 +107,7 @@ FD_TABLE   = os.getenv('FD_TABLE', 'file_records')
 MSG_TABLE  = os.getenv('MSG_TABLE', 'message_history')
 
 
-def get_configuration_file_path(names : Optional[List[str]] = None):
+def get_configuration_file_path(names : Optional[list[str]] = None):
     global config_file_path
 
     opath = []

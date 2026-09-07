@@ -28,7 +28,7 @@ from ..io.parser.generic import FileDesc
 
 from os      import PathLike
 from pathlib import Path
-from typing  import List, Optional
+from typing  import Optional
 from abc     import ABC, abstractmethod
 
 import uuid
@@ -51,7 +51,7 @@ class IReader(ABC):
     def read(
         cls,
         path              : PathLike[str],
-        meth_names        : Optional[List[str] | str],
+        meth_names        : Optional[list[str] | str],
         intermediate_path : PathLike[str],
         **kwargs
     ) -> any:
@@ -96,14 +96,14 @@ class IReader(ABC):
     @classmethod
     def _normalize_methods_(
         cls,
-        meth_names: Optional[List[str] | str]
+        meth_names: Optional[list[str] | str]
     ):
         '''
         Normalize the methods, 
         i.e remove the duplicated method names and validate they are accepted by current Reader
         
         Args:
-            meth_names (List[str]): input method names
+            meth_names (list[str]): input method names
         '''
         meth_names = [meth_names] if type(meth_names) == str else meth_names
         return [meth_name for meth_name in meth_names if cls.method_exists(meth_name)]
@@ -195,7 +195,7 @@ class IReader(ABC):
     def __call__(
         cls, 
         path       : PathLike[str],
-        meth_names : Optional[List[str] | str | None],
+        meth_names : Optional[list[str] | str | None],
         cache_path : PathLike[str],
         **kwargs
     ):
@@ -213,7 +213,7 @@ class PDFReader(IReader):
     def read(
         cls,
         path              : PathLike[str],
-        meth_names        : Optional[List[str] | str],
+        meth_names        : Optional[list[str] | str],
         intermediate_path : Optional[PathLike[str]] = None,
         descriptor        : Optional[FileDesc]    = None,
         **kwargs
@@ -224,7 +224,7 @@ class PDFReader(IReader):
         Args:
             path (PathLike[str]): Path to the file to be read.
             
-            meth_name (Optional[List[str] | str | None]): 
+            meth_name (Optional[list[str] | str | None]): 
                 Method(s) to use for extraction. Can be a single method name, a list of method names, or None.
             
             **kwargs: Optional keyword arguments to control extraction behavior.
@@ -242,7 +242,7 @@ class PDFReader(IReader):
                 resolve to minimize the usage of OCR, because OCR detection takes more cost.
             
         Returns:
-            List: A list of data blocks extracted by the specified methods.
+            list: A list of data blocks extracted by the specified methods.
 
         Raises:
             KeyError: If a specified method in `meth_name` does not exist in `_extract_methods_`.
@@ -346,10 +346,10 @@ class PDFReader(IReader):
     def _record_pages_method_(
             cls,
             total_pages : int, 
-            text_pages  : List[int], 
-            ocr_pages   : List[int], 
-            meth_names  : List[str]
-        ) -> List[str]:
+            text_pages  : list[int], 
+            ocr_pages   : list[int], 
+            meth_names  : list[str]
+        ) -> list[str]:
         
             if len(meth_names) < 1:
                 raise ValueError("Methods not specified")
@@ -446,7 +446,7 @@ class DOCXReader(IReader):
     def read(
         cls,
         path              : PathLike[str],
-        meth_names        : Optional[List[str] | str | None],
+        meth_names        : Optional[list[str] | str | None],
         intermediate_path : PathLike[str] = None,
         descriptor        : Optional[FileDesc]    = None,
         **kwargs
@@ -551,7 +551,7 @@ class ImageReader(IReader):
     def read(
         cls,
         path              : PathLike[str],
-        meth_names        : Optional[List[str] | str | None],
+        meth_names        : Optional[list[str] | str | None],
         intermediate_path : PathLike[str],
         descriptor        : Optional[FileDesc]    = None,
         **kwargs

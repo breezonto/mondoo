@@ -1,10 +1,8 @@
 from .psql         import ( PostgresConfig )
 from .psql_reader  import PostgresReader
 
-from abc             import ABC, abstractmethod
 from contextlib      import asynccontextmanager, contextmanager
-from typing          import Any, AsyncGenerator, Generator, Optional, Union
-from dataclasses     import dataclass, field
+from typing          import Optional
 from psycopg2.extras import RealDictCursor as AsyncRealDictCursor, Json
 
 import logging
@@ -18,14 +16,23 @@ logger = logging.getLogger(__name__)
 
 
 class PostgresWriter:
-    def __new__(cls, config: 'PostgresConfig', is_async: bool = False):
+    def __new__(
+        cls, 
+        config   : 'PostgresConfig', 
+        is_async : bool = False
+    ):
         if is_async:
             return object.__new__(_AsyncPostgresWriterImpl)
         return object.__new__(_SyncPostgresWriterImpl)
     
 
 class _SyncPostgresWriterImpl(PostgresWriter):
-    def __init__(self, config: 'PostgresConfig', *, is_async: bool = False):
+    def __init__(
+        self, 
+        config : 'PostgresConfig', 
+        *, 
+        is_async : bool = False
+    ):
         self.config = config
         self._pool: pool.ThreadedConnectionPool | None = None
 
@@ -66,15 +73,20 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     # ───────────── INSERT ─────────────
     def _insert_(
         self, 
-        table     : str, 
+        table : str,
+        *, 
         data      : dict, 
         returning : bool = False
     ) -> Optional[dict]:
+        """
+        @TODO comment
+        """
+
         keys   = data.keys()
         values = tuple(data.values())
 
         cols = ', '.join(keys)
-        placeholders = ', '.join(["%s"] * len(keys))
+        placeholders = ', '.join(['%s'] * len(keys))
         sql = f"INSERT INTO {table} ({cols}) VALUES ({placeholders})"
         if returning:
             sql += " RETURNING *"
@@ -87,13 +99,17 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     
     def insert(
         self, 
-        table     : str, 
+        table : str,
+        *, 
         data      : dict,
         json_col  : Optional[str]  = None,
         json_data : Optional[dict] = None, 
         returning : bool           = False
     ) -> Optional[dict]:
-        
+        """
+        @TODO comment
+        """
+                
         if json_col is not None and json_data is not None:
             data[json_col] = Json(json_data)
     
@@ -120,13 +136,22 @@ class _SyncPostgresWriterImpl(PostgresWriter):
 
 
     # ───────────── BATCH INSERT ─────────────
-    def insert_many(self, table: str, rows: list[dict]) -> None:
+    def insert_many(
+        self, 
+        table : str,
+        *, 
+        rows : list[dict]
+    ) -> None:
+        """
+        @TODO comment
+        """
+
         if not rows:
             return
 
         keys = rows[0].keys()
         cols = ', '.join(keys)
-        placeholders = ', '.join(["%s"] * len(keys))
+        placeholders = ', '.join(['%s'] * len(keys))
 
         sql = f"INSERT INTO {table} ({cols}) VALUES ({placeholders})"
 
@@ -138,12 +163,17 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     # ───────────── UPDATE ─────────────
     def update(
         self,
-        table        : str,
+        table : str,
+        *,
         data         : dict,
         where        : str,
         where_params : tuple = (),
         returning    : bool = False,
     ) -> list[dict]:
+        """
+        @TODO comment
+        """
+
         set_clause = ', '.join([f"{k} = %s" for k in data.keys()])
         params = tuple(data.values()) + where_params
 
@@ -159,18 +189,32 @@ class _SyncPostgresWriterImpl(PostgresWriter):
 
     def update_json(
         self,
-        table        : str,
+        table : str,
+        *,
         json_column  : str,
         json_data    : dict,
         where        : str,
         where_params : tuple = (),
         returning    : bool = False,
     ):
+        """
+        @TODO comment
+        """
+
         data = { json_column: Json(json_data) }
         return self.update(table, data, where, where_params, returning)
     
     # ───────────── DELETE ─────────────
-    def delete(self, table: str, where: str, where_params: tuple = ()) -> int:
+    def delete(self, 
+        table : str, 
+        *,
+        where        : str, 
+        where_params : tuple = ()
+    ) -> int:
+        """
+        @TODO comment
+        """
+
         sql = f"DELETE FROM {table} WHERE {where}"
 
         with self._get_cursor() as (_, cur):
@@ -180,16 +224,21 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     # ───────────── UPSERT ─────────────
     def upsert(
         self,
-        table            : str,
+        table : str,
+        *,
         data             : dict,
         conflict_columns : list[str],
         returning        : bool = False,
     ) -> Optional[dict]:
+        """
+        @TODO comment
+        """
+
         keys = data.keys()
         values = tuple(data.values())
 
         cols = ', '.join(keys)
-        placeholders = ', '.join(["%s"] * len(keys))
+        placeholders = ', '.join(['%s'] * len(keys))
 
         update_clause = ', '.join(
             [f"{k} = EXCLUDED.{k}" for k in keys if k not in conflict_columns]
@@ -215,11 +264,24 @@ class _SyncPostgresWriterImpl(PostgresWriter):
     
 
 class _AsyncPostgresWriterImpl(PostgresWriter):
-    def __init__(self, config: 'PostgresConfig', *, is_async: bool = False):
+    def __init__(
+        self, 
+        config : 'PostgresConfig', 
+        *, 
+        is_async: bool = False
+    ):
+        """
+        @TODO comment
+        """
+
         self.config = config
         self._pool: aiopg.Pool | None = None
 
     async def connect(self) -> None:
+        """
+        @TODO comment
+        """
+
         if self._pool:
             return
         self._pool = await aiopg.create_pool(
@@ -233,6 +295,10 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
         )
 
     async def close(self) -> None:
+        """
+        @TODO comment
+        """
+
         if self._pool:
             self._pool.close()
             await self._pool.wait_closed()
@@ -240,6 +306,10 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
 
     @asynccontextmanager
     async def _get_cursor(self):
+        """
+        @TODO comment
+        """
+
         if not self._pool:
             await self.connect()
         async with self._pool.acquire() as conn:
@@ -251,6 +321,10 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
 
     @asynccontextmanager
     async def transaction(self):
+        """
+        @TODO comment
+        """
+
         async with self._get_cursor() as (_, cur):
             try:
                 await cur.execute("BEGIN")
@@ -263,10 +337,15 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
     # ───────── INSERT ─────────
     async def _insert_(
         self, 
-        table     : str, 
+        table : str,
+        *, 
         data      : dict, 
         returning : bool = False
     ):
+        """
+        @TODO comment
+        """
+
         keys   = data.keys()
         values = tuple(data.values())
 
@@ -286,12 +365,17 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
     
     async def insert(
         self, 
-        table     : str, 
+        table : str,
+        *,
         data      : dict,
         json_col  : Optional[str]  = None,
         json_data : Optional[dict] = None, 
         returning : bool           = False
     ):
+        """
+        @TODO comment
+        """
+        
         if json_col is not None and json_data is not None:
             data[json_col] = Json(json_data)
         
@@ -312,7 +396,19 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
     #     return await self._insert_(table, data, returning=returning)
     
     # ───────── UPDATE ─────────
-    async def update(self, table, data, where, where_params=(), returning=False):
+    async def update(
+        self, 
+        table : str, 
+        *,
+        data         : dict, 
+        where        : str, 
+        where_params : tuple = (), 
+        returning    : bool  = False
+    ):
+        """
+        @TODO comment
+        """
+
         set_clause = ', '.join([f"{k} = %s" for k in data.keys()])
         params = tuple(data.values()) + where_params
 
@@ -331,17 +427,31 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
     async def update_json(
         self,
         table        : str,
+        *,
         json_column  : str,
         json_data    : dict,
         where        : str,
         where_params : tuple = (),
         returning    : bool  = False,
     ):
+        """
+        @TODO comment
+        """
+
         data = { json_column: Json(json_data) }
         return await self.update(table, data, where, where_params, returning)
 
     # ───────── DELETE ─────────
-    async def delete(self, table, where, where_params=()):
+    async def delete(self, 
+        table : str,
+        *, 
+        where        : str, 
+        where_params : tuple = ()
+    ):
+        """
+        @TODO comment
+        """
+
         sql = f"DELETE FROM {table} WHERE {where}"
         # async with self._get_cursor() as (_, cur):
         async with self.transaction() as cur:
@@ -350,11 +460,15 @@ class _AsyncPostgresWriterImpl(PostgresWriter):
 
     # ───────── UPSERT ─────────
     async def upsert(self, table, data, conflict_columns, returning=False):
+        """
+        @TODO comment
+        """
+
         keys = data.keys()
         values = tuple(data.values())
 
         cols = ', '.join(keys)
-        placeholders = ', '.join(["%s"] * len(keys))
+        placeholders = ', '.join(['%s'] * len(keys))
         conflict = ', '.join(conflict_columns)
 
         update_clause = ', '.join(

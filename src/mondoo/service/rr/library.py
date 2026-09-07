@@ -26,4 +26,5 @@ class RespFileStatus(BaseModel):
 
 
 class ReqExtract(BaseModel):
-    method_name : Literal['text', 'ocr']
+    method_name     : Literal['text', 'ocr']
+    should_offline  : bool = False

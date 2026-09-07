@@ -5,7 +5,7 @@ from mondoo.configurator import LOGGING_YAML_PATH, get_global_config_value
 from datetime import datetime
 from pathlib  import Path
 from os       import PathLike
-from typing   import Dict, List, Optional
+from typing   import Optional
 
 import subprocess
 import os
@@ -29,7 +29,7 @@ def get_timestamp():
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
-def select_apps(names : Optional[List[str]] = None):
+def select_apps(names : Optional[list[str]] = None):
     """Return dictionary of apps matching names. If names empty, return all."""
     if not names or len(names) < 1:
         return _apps
@@ -40,8 +40,6 @@ def select_apps(names : Optional[List[str]] = None):
         if name in names: selected[name] = app
 
     missing = set(names) - set(_apps.keys())
-    # print('names: ', names)
-    # print('_apps.keys():', _apps.keys())
     if missing:
         print(f"Warning: unknown app(s) {', '.join(missing)}")
     return selected
@@ -49,9 +47,9 @@ def select_apps(names : Optional[List[str]] = None):
 
 
 def build_envs(
-    app_conf     : Dict,
-    storage_conf : Dict,
-    asset_conf   : Dict
+    app_conf     : dict,
+    storage_conf : dict,
+    asset_conf   : dict
 ):
     env = os.environ.copy()
 
@@ -83,11 +81,11 @@ def build_envs(
 
 
 def launch_apps(
-    selected_apps : Dict,
+    selected_apps : dict,
     *, 
     log_base_dir  : PathLike[str],
-    storage_conf  : Optional[Dict] = None,
-    asset_conf    : Optional[Dict] = None
+    storage_conf  : Optional[dict] = None,
+    asset_conf    : Optional[dict] = None
 ):
     for name, app in selected_apps.items():
         log_dir = os.path.join(log_base_dir, name)
@@ -130,7 +128,7 @@ def launch_apps(
             )
 
 
-def stop_apps(selected_apps : Dict):
+def stop_apps(selected_apps : dict):
     for name, app in selected_apps.items():
         port = app['port']
         if os.name == "nt":
@@ -156,7 +154,7 @@ def stop_apps(selected_apps : Dict):
     print("Selected FastAPI apps stopped.")
 
 
-def run_app(app : Dict):
+def run_app(app : dict):
     uvicorn_cmd = [
         'uv', 'run', '--no-sync',
         'python', '-m', 'uvicorn',

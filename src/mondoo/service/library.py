@@ -2,7 +2,7 @@ from mondoo.mdo.engine.manager.file_descriptor import FDManager
 from mondoo.mdo.io.parser.generic              import FileStage, FileRecord
 
 from .rr.generic import RespStatus
-from .rr.upload  import (
+from .rr.library  import (
     ReqCompleteUpload,
     RespUploading,
     RespFileStatus,
@@ -15,9 +15,10 @@ from fastapi               import FastAPI, Form, HTTPException, Request
 from fastapi               import UploadFile
 from fastapi.openapi.utils import get_openapi
 
-import mondoo.mdo.api.fsys as ifsys
+import mondoo.mdo.api.fs as ifs
 import os
 import logging
+import asyncio
 
 
 logger = logging.getLogger(__name__)
@@ -49,18 +50,18 @@ app = FastAPI(
 
 
 def launch_parse_file_task_thread(
-    file_id    : str,
-    path       : str,
-    record     : FileRecord,
-    parse_meth : str
+    file_id : str,
+    path    : str,
+    record  : FileRecord,
+    method  : str
 ):
-    cache_path, num_chunks = ifsys.parse(
+    cache_path, num_chunks = ifs.parse(
         file_id, 
-        file_path       = path,
-        method = parse_meth
+        file_path = path,
+        method    = method
     )
     
-    with ifsys.file_task_lock:
+    with ifs.file_task_lock:
         record.desc.target_path = cache_path
         record.stage            = FileStage.PARSED
         record.total_chunks     = num_chunks
@@ -156,7 +157,8 @@ async def upload_slice(
             stage        = FileStage.UPLOADING,
             curr_slice   = slice_index,
             total_slices = total_slices,
-            total_chunks = 0
+            total_chunks = 0,
+            upload_time  = None
         )
     
     # write to file
@@ -228,11 +230,14 @@ async def complete(
     record.desc.file_id     = file_id
     record.desc.size        = size_bytes
     record.desc.source_path = source_path
+
     if record.total_slices < 2:
         record.curr_slice += 1
 
     record.stage = FileStage.UPLOADED
+
     await FDManager.archive_in_async(file_id, record) 
+
     return RespFileStatus(
         status  = RespStatus.OK,
         file_id = file_id,
@@ -246,7 +251,7 @@ async def complete(
     #             asyncio.to_thread(func, file_id, source_path, record, req.parse_meth)
     #         )
     #     else:
-    #         await ifsys.do_parse_file_task_async(
+    #         await ifs.do_parse_file_task_async(
     #             file_id, 
     #             source_path, 
     #             record, 
@@ -260,12 +265,23 @@ async def extract(
     req     : ReqExtract
 ):
     record = FDManager.query(file_id)
-    await ifsys.do_parse_file_task_async(
-        file_id, 
-        record.desc.source_path, 
-        record, 
-        req.method_name
-    )
+    source_path = record.desc.source_path
+    if req.should_offline:
+        asyncio.create_task(
+            asyncio.to_thread(launch_parse_file_task_thread, 
+                file_id, 
+                source_path, 
+                record, 
+                req.parse_meth
+            )
+        )
+    else:
+        await ifs.do_parse_file_task_async(
+            file_id, 
+            source_path, 
+            record, 
+            req.parse_meth
+        )
 
 
 
@@ -303,8 +319,8 @@ async def remove_file(file_id: str):
         raise HTTPException(status_code=500, detail=hint)
 
     try: # remove source and cached files
-        ifsys.remove_src_file(file_path)
-        ifsys.remove_fd_file(cache_path)
+        ifs.remove_src_file(file_path)
+        ifs.remove_fd_file(cache_path)
     except FileNotFoundError as e:
         hint = f"\"Delete resource missing for <{file_id}>: {str(e)}\""
         logger.warning(hint)
@@ -331,15 +347,6 @@ def get_file_views():
     return { 
         'status' : 'ok',
         'views'  : views
-    }
-
-
-@app.get('/api/v1/files/context')
-def get_file_context():
-    context = FDManager.context
-    return { 
-        'status'  : 'ok',
-        'context' : context
     }
 
 
