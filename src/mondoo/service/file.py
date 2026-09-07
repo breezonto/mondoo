@@ -334,15 +334,6 @@ def get_file_views():
     }
 
 
-@app.get('/api/v1/files/context')
-def get_file_context():
-    context = FDManager.context
-    return { 
-        'status'  : 'ok',
-        'context' : context
-    }
-
-
 @app.get('/api/v1/files/{ext}/methods')
 def get_available_methods(ext : str):
     return {

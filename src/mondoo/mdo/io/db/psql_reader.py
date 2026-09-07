@@ -155,18 +155,20 @@ class _SyncPostgresReaderImpl(PostgresReader):
         page_size    : int = 100
     ) -> 'QueryResult':
         
-        col_str = ', '.join(columns) if columns else '*'
-        where_clause = f"WHERE {where}" if where else ""
+        col_str      = ', '.join(columns)     if columns  else '*'
+        where_clause = f"WHERE {where}"       if where    else ""
         order_clause = f"ORDER BY {order_by}" if order_by else ""
         
         total_count = None
         pagination_clause = ""
         if page is not None:
             offset = (page - 1) * page_size
+
             pagination_clause = f"LIMIT {page_size} OFFSET {offset}"
-            count_sql = f"SELECT COUNT(*) FROM {table} {where_clause}"
+
+            count_sql    = f"SELECT COUNT(*) FROM {table} {where_clause}"
             count_result = self.execute_sql(count_sql, where_params)
-            total_count = count_result.rows[0]["count"]
+            total_count  = count_result.rows[0]["count"]
 
         sql = f"SELECT {col_str} FROM {table} {where_clause} {order_clause} {pagination_clause}".strip()
         result = self.execute_sql(sql, where_params)

@@ -41,10 +41,11 @@ class FDManager:
     FDManager for archiving and parsing the parser.
     """ 
 
-    _registry        = {}
+    _registry = {}
+
     _default_object_dir      = OBJECT_DIR
     _default_source_file_dir = SOURCE_DIR
-    _default_file_table_name = FD_TABLE
+    _default_table_name      = FD_TABLE
 
     _cache_name   = FD_TABLE + '_cache'
     _cache_client = CacheHelper(_cache_name)
@@ -138,7 +139,7 @@ class FDManager:
                     }
 
                     db.insert(
-                        table_name = cls._default_file_table_name,
+                        table_name = cls._default_table_name,
                         data       = data,
                         returning  = False 
                     )
@@ -156,7 +157,7 @@ class FDManager:
                     }
                     
                     db.update(
-                        table_name   = cls._default_file_table_name,
+                        table_name   = cls._default_table_name,
                         data         = attributes,
                         where        = "file_id = %s",
                         where_params = (file_id,),
@@ -205,7 +206,7 @@ class FDManager:
 
                     # NOTE: await
                     await db.insert_async(
-                        table_name = cls._default_file_table_name,
+                        table_name = cls._default_table_name,
                         data       = data,
                         returning  = False 
                     )
@@ -224,7 +225,7 @@ class FDManager:
                     
                     # NOTE: await
                     await db.update_async(
-                        table_name   = cls._default_file_table_name,
+                        table_name   = cls._default_table_name,
                         data         = attributes,
                         where        = "file_id = %s",
                         where_params = (file_id,),
@@ -251,7 +252,7 @@ class FDManager:
                 db = get_current_dbc(is_async=False)
                 
                 db.remove(
-                    table_name   = cls._default_file_table_name,
+                    table_name   = cls._default_table_name,
                     where        = "file_id = %s",
                     where_params = (file_id,)
                 )
@@ -273,7 +274,7 @@ class FDManager:
                 db = get_current_dbc(is_async=True)
                 # NOTE: await
                 await db.remove_async(
-                    table_name   = cls._default_file_table_name,
+                    table_name   = cls._default_table_name,
                     where        = "file_id = %s",
                     where_params = (file_id,)
                 )
@@ -397,36 +398,7 @@ class FDManager:
         """
 
         reader_cls = cls._get_reader_(ext)
-        return reader_cls.methods
-    
-    
-    @classproperty
-    def context(cls) -> str:
-        """
-        @TODO comment
-        """
-
-        records = cls.query_all()
-        views = [record.user_view for record in records]
-
-        prompt = f"""
-你当前可以访问一个文件管理系统。系统中已有文件的信息如下。
-
-每个文件包含以下字段：
-- filename：文件名（不包含扩展名）
-- type：文件扩展名
-- size：文件大小（字节）
-- stage：当前处理阶段
-- num_chunk：文件被拆分的 chunk 数量
-
-当前系统中的文件列表如下：
-
-{json.dumps(views, indent=2, ensure_ascii=False)}
-
-请根据这些信息回答用户的问题。如果用户提到文件，请优先匹配文件名进行准确引用。
-"""
-        return prompt.strip()
-        
+        return reader_cls.methods    
     
     @classmethod
     def _get_reader_(cls, ext: str):
