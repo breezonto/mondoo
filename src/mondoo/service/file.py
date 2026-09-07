@@ -15,7 +15,7 @@ from fastapi               import FastAPI, Form, HTTPException, Request
 from fastapi               import UploadFile
 from fastapi.openapi.utils import get_openapi
 
-import mondoo.mdo.api.fs as ifsys
+import mondoo.mdo.api.fs as ifs
 import os
 import logging
 import asyncio
@@ -55,13 +55,13 @@ def launch_parse_file_task_thread(
     record  : FileRecord,
     method  : str
 ):
-    cache_path, num_chunks = ifsys.parse(
+    cache_path, num_chunks = ifs.parse(
         file_id, 
         file_path = path,
         method    = method
     )
     
-    with ifsys.file_task_lock:
+    with ifs.file_task_lock:
         record.desc.target_path = cache_path
         record.stage            = FileStage.PARSED
         record.total_chunks     = num_chunks
@@ -251,7 +251,7 @@ async def complete(
     #             asyncio.to_thread(func, file_id, source_path, record, req.parse_meth)
     #         )
     #     else:
-    #         await ifsys.do_parse_file_task_async(
+    #         await ifs.do_parse_file_task_async(
     #             file_id, 
     #             source_path, 
     #             record, 
@@ -276,7 +276,7 @@ async def extract(
             )
         )
     else:
-        await ifsys.do_parse_file_task_async(
+        await ifs.do_parse_file_task_async(
             file_id, 
             source_path, 
             record, 
@@ -319,8 +319,8 @@ async def remove_file(file_id: str):
         raise HTTPException(status_code=500, detail=hint)
 
     try: # remove source and cached files
-        ifsys.remove_src_file(file_path)
-        ifsys.remove_fd_file(cache_path)
+        ifs.remove_src_file(file_path)
+        ifs.remove_fd_file(cache_path)
     except FileNotFoundError as e:
         hint = f"\"Delete resource missing for <{file_id}>: {str(e)}\""
         logger.warning(hint)
