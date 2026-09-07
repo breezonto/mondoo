@@ -93,11 +93,6 @@ async def handler_wrapper(reader, writer, handler: MCPGatewayClient):
     writer.close()
 
 
-def get_available_tools():
-    global TOOLS
-    return TOOLS
-
-
 async def run_gateway():
     if os.path.exists(SOCK_PATH_4_GATEWAY):
         os.remove(SOCK_PATH_4_GATEWAY)
