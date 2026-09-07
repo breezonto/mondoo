@@ -97,12 +97,12 @@ async def handle_client(reader, writer, session: ClientSession):
 
 class MCPGateway:
     def __init__(self):
-        self.sessions  = {}
+        self._sessions  = {}
         self._ready    = {}
         self._tasks    = {}
         self._errors   = {}          # ← capture why each server died
 
-    async def connect_server(self, name: str, command: list[str], sock_path) -> None:
+    async def _connect_server_(self, name: str, command: list[str], sock_path) -> None:
         """Connect to an MCP server and block until it's ready."""
         if name in self._tasks:
             raise RuntimeError(f"Server '{name}' is already registered")
@@ -124,7 +124,7 @@ class MCPGateway:
                 async with ClientSession(read, write) as session:
                     # Initialize the session (handshake with server)
                     await session.initialize()
-                    self.sessions[name] = session
+                    self._sessions[name] = session
 
                     self._ready[name] = True
                     ready_event.set()
@@ -148,7 +148,7 @@ class MCPGateway:
         """Aggregate tools from all servers"""
         domains = {}
 
-        for name, session in self.sessions.items():
+        for name, session in self._sessions.items():
             try:
                 tools = await session.list_tools()
                 domains[name] = [
@@ -166,14 +166,14 @@ class MCPGateway:
         return domains
 
     async def call_tool(self, server: str, tool: str, args: dict):
-        if server not in self.sessions:
+        if server not in self._sessions:
             return f"Server '{server}' not found"
 
         if not self._ready.get(server):
             err = self._errors.get(server, "unknown reason")
             return f"Server '{server}' is dead: {err}"
 
-        session = self.sessions[server]
+        session = self._sessions[server]
 
         try:
             result = await session.call_tool(tool, args)
@@ -187,17 +187,17 @@ gateway = MCPGateway()
 
 # lifecycle management
 async def startup():
-    await gateway.connect_server('kaleido', 
-        command = [
-            sys.executable,
-            "-m",
-            'mondoo.mcp.server.kaleidoscope'
-        ],
-        sock_path = SOCK_PATH_4_KALEIDO
-    )
-    logger.info("Gateway Connected to Server: Kaleido")
+    # await gateway.connect_server('kaleido', 
+    #     command = [
+    #         sys.executable,
+    #         "-m",
+    #         'mondoo.mcp.server.kaleidoscope'
+    #     ],
+    #     sock_path = SOCK_PATH_4_KALEIDO
+    # )
+    # logger.info("Gateway Connected to Server: Kaleido")
     
-    await gateway.connect_server('librarian', 
+    await gateway._connect_server_('librarian', 
         command   = [
             sys.executable,
             "-m",
