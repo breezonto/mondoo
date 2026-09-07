@@ -3,7 +3,6 @@ from mondoo.configurator import load_yaml_config, set_global_config_value
 from os       import PathLike
 from argparse import _SubParsersAction, ArgumentParser
 from pathlib  import Path
-from typing   import Dict
 
 import argparse
 import os
@@ -98,8 +97,8 @@ def command_launch(args):
                 name = config_path.stem
                 cfgs[name] = load_yaml_config(str(config_path))
 
-        service      : Dict          = cfgs['service']
-        apps         : Dict          = service['apps']
+        service      : dict          = cfgs['service']
+        apps         : dict          = service['apps']
         log_base_dir : PathLike[str] = service.get('log_base_dir', './logs')
 
         set_global_config_value('service', cfgs['service'])
@@ -229,7 +228,7 @@ def command_config(args):
     """
     @TODO comment
     """
-    
+
     import shutil
     from mondoo.configurator import get_configuration_file_path
     if args.dump is not None:
