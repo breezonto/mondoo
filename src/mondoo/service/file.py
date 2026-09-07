@@ -156,7 +156,8 @@ async def upload_slice(
             stage        = FileStage.UPLOADING,
             curr_slice   = slice_index,
             total_slices = total_slices,
-            total_chunks = 0
+            total_chunks = 0,
+            upload_time  = None
         )
     
     # write to file
@@ -228,11 +229,14 @@ async def complete(
     record.desc.file_id     = file_id
     record.desc.size        = size_bytes
     record.desc.source_path = source_path
+
     if record.total_slices < 2:
         record.curr_slice += 1
 
     record.stage = FileStage.UPLOADED
+
     await FDManager.archive_in_async(file_id, record) 
+
     return RespFileStatus(
         status  = RespStatus.OK,
         file_id = file_id,
