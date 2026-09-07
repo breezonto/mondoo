@@ -132,8 +132,8 @@ class _SyncPostgresReaderImpl(PostgresReader):
 
     def execute_sql(
         self, 
-        sql: str, 
-        params: tuple = ()
+        sql    : str, 
+        params : tuple = ()
     ) -> 'QueryResult':
         with self._get_cursor(psycopg2.extras.RealDictCursor) as (_, cursor):
             logger.debug("Executing SQL: %s | Params: %s", sql, params)
@@ -145,7 +145,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
 
     def query(
         self, 
-        table: str, 
+        table : str, 
         *, 
         columns      : Optional[list[str]] = None, 
         where        : Optional[str] = None, 
@@ -177,7 +177,8 @@ class _SyncPostgresReaderImpl(PostgresReader):
 
     def query_by_id(
         self, 
-        table     : str, 
+        table : str,
+        *, 
         record_id : Any, 
         id_column : str = "id", 
         columns   : Optional[list[str]] = None
@@ -206,7 +207,8 @@ class _SyncPostgresReaderImpl(PostgresReader):
 
     def count(
         self, 
-        table        : str, 
+        table : str,
+        *, 
         where        : Optional[str] = None, 
         where_params : tuple = ()
     ) -> int:
@@ -216,7 +218,7 @@ class _SyncPostgresReaderImpl(PostgresReader):
 
     def stream_query(
         self, 
-        table        : str, 
+        table : str, 
         *, 
         columns      : Optional[list[str]] = None, 
         where        : Optional[str] = None, 
@@ -304,7 +306,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
 
     async def query(
         self, 
-        table        : str, 
+        table : str, 
         *, 
         columns      : Optional[list[str]] = None, 
         where        : Optional[str] = None, 
@@ -335,7 +337,8 @@ class _AsyncPostgresReaderImpl(PostgresReader):
 
     async def query_by_id(
         self, 
-        table     : str, 
+        table : str,
+        *, 
         record_id : Any, 
         id_column : str = 'id', 
         columns   : Optional[list[str]] = None
@@ -362,7 +365,8 @@ class _AsyncPostgresReaderImpl(PostgresReader):
 
     async def count(
         self, 
-        table        : str, 
+        table : str,
+        *, 
         where        : Optional[str] = None, 
         where_params : tuple = ()
     ) -> int:
@@ -372,7 +376,7 @@ class _AsyncPostgresReaderImpl(PostgresReader):
 
     async def stream_query(
         self, 
-        table        : str, 
+        table : str, 
         *, 
         columns      : Optional[list[str]] = None, 
         where        : Optional[str] = None, 
