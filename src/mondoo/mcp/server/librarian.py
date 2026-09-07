@@ -17,7 +17,9 @@ import os
 
 
 config = setup_mcp_logging('librarian')
+
 logging.config.dictConfig(config)
+
 logger = logging.getLogger('mondoo.mcp.server.librarian')
 
 
