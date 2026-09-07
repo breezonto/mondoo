@@ -198,7 +198,7 @@ async def get_document_summary(title : str) -> str:
         reader = PostgresReader(config, is_async = True)
         await reader.connect()
         result = await reader.query(
-            table        = FD_TABLE,
+            FD_TABLE,
             columns      = ['summary'],
             where        = 'stem = %s',
             where_params = (title,),
@@ -231,11 +231,11 @@ async def set_document_summary(title : str, summary : str) -> str:
     await writer.connect()
     try:
         result = await writer.update(
-            table="file_records",
-            data={ "summary": summary},
-            where="stem = %s",
-            where_params=(title,),
-            returning=True
+            'file_records',
+            data         = { "summary": summary},
+            where        = "stem = %s",
+            where_params = (title,),
+            returning    = True
         )
         
         if not result:
