@@ -31,11 +31,11 @@ logger = logging.getLogger(__name__)
 class QueryResult:
     """Query Result Wrapper"""
 
-    columns: list[str] = field(default_factory=list)
-    rows: list[dict]   = field(default_factory=list)
-    total_count: Optional[int] = None
-    page: Optional[int] = None
-    page_size: Optional[int] = None
+    columns     : list[str] = field(default_factory=list)
+    rows        : list[dict]   = field(default_factory=list)
+    total_count : Optional[int] = None
+    page        : Optional[int] = None
+    page_size   : Optional[int] = None
 
     @property
     def row_count(self) -> int:
@@ -89,13 +89,13 @@ class _SyncPostgresReaderImpl(PostgresReader):
             return
         try:
             self._pool = pool.ThreadedConnectionPool(
-                minconn=self.config.min_connections,
-                maxconn=self.config.max_connections,
-                host=self.config.host,
-                port=self.config.port,
-                dbname=self.config.database,
-                user=self.config.user,
-                password=self.config.password,
+                minconn  = self.config.min_connections,
+                maxconn  = self.config.max_connections,
+                host     = self.config.host,
+                port     = self.config.port,
+                dbname   = self.config.database,
+                user     = self.config.user,
+                password = self.config.password,
             )
             logger.info("✅ Connection pool established [%s:%d/%s]", self.config.host, self.config.port, self.config.database)
         except psycopg2.Error as e:
