@@ -1,0 +1,27 @@
+SELECT ?graph ?numberOfTriples
+WHERE {
+    {
+        SELECT ?graph (COUNT(*) AS ?numberOfTriples)
+        WHERE {
+            GRAPH ?graph {
+                ?s ?p ?o .
+            }
+        }
+        GROUP BY ?graph
+    }
+
+    UNION
+
+    {
+        SELECT ("Total number of graphs" AS ?graph)
+               (COUNT(DISTINCT ?g) AS ?numberOfTriples)
+        WHERE {
+            GRAPH ?g {
+                ?s ?p ?o .
+            }
+        }
+    }
+}
+ORDER BY
+    IF(?graph = "Total number of graphs", 1, 0)
+    ?graph

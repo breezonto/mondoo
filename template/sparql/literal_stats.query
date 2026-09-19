@@ -1,0 +1,9 @@
+SELECT ?movie_name 
+WHERE {
+    GRAPH ?graph {
+        ?movie a <http://schema.org/Movie>.
+        ?movie <http://schema.org/name> ?movie_name
+    }
+}
+
+LIMIT 100

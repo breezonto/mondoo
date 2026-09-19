@@ -1,13 +1,12 @@
 from __future__ import annotations
+from pathlib import Path
+from typing import Iterable
+from rdflib import Dataset, URIRef, BNode, Literal
 
 import csv
 import json
 import random
-from pathlib import Path
-from typing import Iterable
-
-from rdflib import Dataset, URIRef, BNode, Literal
-
+import os
 
 class KGraph:
     """
@@ -569,18 +568,22 @@ class KGraph:
             )
 
 
+def _get_sparql_helper_(file_name):
+    base_dir = './template/sparql'
+    return Path(os.path.join(base_dir, file_name)).read_text()
+
+
 if __name__ == '__main__':
-    query = """
-SELECT ?class (COUNT(?entity) AS ?instances)
-WHERE {
-    GRAPH ?graph {
-        ?entity a ?class .
-    }
-}
-GROUP BY ?class
-ORDER BY DESC(?instances)
-    """
+    data_files_dir = '/Users/breeze/miscs/doi-10.17026-dans-z64-mrvb'
+
+    class_stats   = _get_sparql_helper_('class_stats.query')
+    graph_stats   = _get_sparql_helper_('graph_stats.query')
+    inst_stats    = _get_sparql_helper_('instances_stats.query')
+    prop_stats    = _get_sparql_helper_('property_stats.query')
+    literal_stats = _get_sparql_helper_('literal_stats.query')
+
+    query = literal_stats
 
     kg = KGraph()
-    kg.load("/Users/breeze/miscs/doi-10.17026-dans-z64-mrvb")
+    kg.load(data_files_dir)
     kg.sparql(query)
