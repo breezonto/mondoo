@@ -1,12 +1,15 @@
 from __future__ import annotations
-from pathlib import Path
-from typing import Iterable
-from rdflib import Dataset, URIRef, BNode, Literal
+from pathlib    import Path
+from typing     import Iterable
+from rdflib     import Dataset, URIRef, BNode, Literal
 
 import csv
 import json
 import random
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 class KGraph:
     """
@@ -46,7 +49,7 @@ class KGraph:
 
             # Directory
             if path.is_dir():
-                paths = sorted(path.glob("*.trig"))
+                paths = sorted(path.glob('*.trig'))
 
             # Single file
             else:
@@ -60,14 +63,16 @@ class KGraph:
             if not path.exists():
                 raise FileNotFoundError(path)
 
-            if path.suffix.lower() != ".trig":
+            if path.suffix.lower() != '.trig':
                 raise ValueError(
                     f"Expected a .trig file: {path}"
                 )
 
-            print(f"Loading: {path}")
+            print(
+                f"Loading: {path}"
+            )
 
-            self.dataset.parse(path, format="trig")
+            self.dataset.parse(path, format='trig')
             self.files.append(path)
 
         print(
@@ -83,10 +88,10 @@ class KGraph:
 
     def sparql(
         self,
-        query: str,
+        query : str,
         *,
-        csv_file: str | Path | None = None,
-        print_result: bool = True,
+        csv_file     : str | Path | None = None,
+        print_result : bool = True,
     ):
         """
         Execute a SPARQL query.
@@ -109,7 +114,7 @@ class KGraph:
         # SELECT
         # --------------------------------------------------------
 
-        if result.type == "SELECT":
+        if result.type == 'SELECT':
 
             variables = [
                 str(variable)
@@ -127,7 +132,7 @@ class KGraph:
                     values[variable] = (
                         self._format_rdf_value(value)
                         if value is not None
-                        else ""
+                        else ''
                     )
 
                 rows.append(values)
@@ -151,7 +156,7 @@ class KGraph:
         # ASK
         # --------------------------------------------------------
 
-        if result.type == "ASK":
+        if result.type == 'ASK':
             value = bool(result)
 
             if print_result:
@@ -191,8 +196,8 @@ class KGraph:
 
     @staticmethod
     def _print_table(
-        columns: list[str],
-        rows: list[dict],
+        columns : list[str],
+        rows    : list[dict],
     ):
         """
         Print a DBpedia-SPARQL-style result table.
@@ -246,13 +251,15 @@ class KGraph:
             )
 
         print()
-        print(f"{len(rows):,} result(s)")
+        print(
+            f"{len(rows):,} result(s)"
+        )
 
     @staticmethod
     def _write_csv(
-        filename: str | Path,
-        columns: list[str],
-        rows: list[dict],
+        filename : str | Path,
+        columns  : list[str],
+        rows     : list[dict],
     ):
         """
         Write SELECT results to CSV.
@@ -261,9 +268,9 @@ class KGraph:
         filename = Path(filename)
 
         with filename.open(
-            "w",
-            newline="",
-            encoding="utf-8",
+            'w',
+            newline='',
+            encoding='utf-8',
         ) as f:
 
             writer = csv.DictWriter(
@@ -274,7 +281,9 @@ class KGraph:
             writer.writeheader()
             writer.writerows(rows)
 
-        print(f"CSV written to: {filename}")
+        print(
+            f"CSV written to: {filename}"
+        )
 
     # ============================================================
     # 3. Sigma.js export
@@ -282,14 +291,14 @@ class KGraph:
 
     def to_sigma(
         self,
-        output_file: str | Path | None = None,
+        output_file : str | Path | None = None,
         *,
-        entity_ratio: float = 1.0,
-        random_seed: int = 42,
-        include_literals: bool = False,
-        include_graph: bool = True,
-        predicates: set[str] | None = None,
-        exclude_predicates: set[str] | None = None,
+        entity_ratio       : float = 1.0,
+        random_seed        : int = 42,
+        include_literals   : bool = False,
+        include_graph      : bool = True,
+        predicates         : set[str] | None = None,
+        exclude_predicates : set[str] | None = None,
     ) -> dict:
         """
         Convert the RDF dataset into Sigma.js / Graphology JSON.
@@ -349,13 +358,13 @@ class KGraph:
 
                 elif include_literals and isinstance(o, Literal):
                     # Optional literal nodes
-                    literal_id = f"literal:{o}"
+                    literal_id = f'literal:{o}'
 
                     if literal_id not in nodes:
                         nodes[literal_id] = {
-                            "id": literal_id,
-                            "label": str(o),
-                            "type": "literal",
+                            'id'    : literal_id,
+                            'label' : str(o),
+                            'type'  : 'literal',
                         }
 
         print(
@@ -476,8 +485,8 @@ class KGraph:
         # --------------------------------------------------------
 
         result = {
-            "nodes": sigma_nodes,
-            "edges": sigma_edges,
+            "nodes" : sigma_nodes,
+            "edges" : sigma_edges,
         }
 
         print(
@@ -496,16 +505,12 @@ class KGraph:
 
             output_file = Path(output_file)
 
-            with output_file.open(
-                "w",
-                encoding="utf-8",
-            ) as f:
-
+            with output_file.open('w', encoding='utf-8') as f:
                 json.dump(
                     result,
                     f,
-                    ensure_ascii=False,
-                    indent=2,
+                    ensure_ascii = False,
+                    indent       = 2,
                 )
 
             print(
@@ -517,7 +522,7 @@ class KGraph:
 
     @staticmethod
     def _add_node(
-        nodes: dict[str, dict],
+        nodes : dict[str, dict],
         value,
     ):
         """
@@ -530,7 +535,7 @@ class KGraph:
             return
 
         if isinstance(value, BNode):
-            label = f"_:{value}"
+            label     = f"_:{value}"
             node_type = "blank-node"
 
         else:
