@@ -1,6 +1,6 @@
 # --- gateway.py ---
-from mondoo.configurator    import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_LIBRARIAN
-from mondoo.mdo.core.common import setup_mcp_logging
+from mondoo.configurator     import SOCK_PATH_4_KALEIDO, SOCK_PATH_4_LIBRARIAN
+from mondoo.mdo.utils.common import setup_mcp_logging
 
 from mcp.server.fastmcp import FastMCP
 from mcp.client.session import ClientSession
@@ -196,7 +196,7 @@ async def startup():
         ],
         sock_path = SOCK_PATH_4_LIBRARIAN
     )
-    logger.info("Gateway Connected to Server: Librarian")
+    logger.info("Gateway Connected to Server: Librarian via stdio stream")
 
 
 @mcp.tool()

@@ -1,4 +1,4 @@
-from mondoo.configurator import BACKEND_BASE, MCP_LOGGING_YAML_PATH
+from mondoo.configurator import MCP_LOGGING_YAML_PATH
 
 from datetime import datetime
 from pathlib  import Path
@@ -6,7 +6,7 @@ from pathlib  import Path
 import yaml
 
 
-def get_timestamp():
+def _get_timestamp_():
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
@@ -24,13 +24,11 @@ def setup_mcp_logging(mcp_server_name: str):
     service_log_dir.mkdir(parents=True, exist_ok=True)
 
     # Create timestamped logfile
-    ts = get_timestamp()
+    ts = _get_timestamp_()
 
     logfile = service_log_dir / f"{mcp_server_name}-{ts}.log"
 
     # Inject logfile path
     config["handlers"]["mcp_file"]["filename"] = str(logfile)
-
-    # logging.config.dictConfig(config)
 
     return config

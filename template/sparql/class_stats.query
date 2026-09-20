@@ -1,0 +1,8 @@
+SELECT ?class (COUNT(?entity) AS ?instances)
+WHERE {
+    GRAPH ?graph {
+        ?entity a ?class .
+    }
+}
+GROUP BY ?class
+ORDER BY DESC(?instances)

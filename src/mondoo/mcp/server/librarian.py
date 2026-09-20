@@ -5,7 +5,7 @@ from mondoo.mdo.io.db.psql  import (
 
 from mondoo.mdo.io.db.psql_reader import PostgresReader
 from mondoo.mdo.io.db.psql_writer import PostgresWriter
-from mondoo.mdo.core.common       import setup_mcp_logging
+from mondoo.mdo.utils.common      import setup_mcp_logging
 from mondoo.configurator          import BACKEND_BASE, DOCUMENTS_DIR, FD_TABLE
 
 from mcp.server.fastmcp import FastMCP
@@ -17,7 +17,9 @@ import os
 
 
 config = setup_mcp_logging('librarian')
+
 logging.config.dictConfig(config)
+
 logger = logging.getLogger('mondoo.mcp.server.librarian')
 
 
@@ -176,11 +178,11 @@ async def get_document_full_content(title: str) -> str:
 
     except FileNotFoundError as e:
         logger.error("Document [%s] Not Found: %s", title, str(e))
-        return f"Document '{title}' not found."
+        return f"Document '{title}' Not Found."
     
     except Exception as e:
         logger.error("Failed to Read Document: %s", str(e))
-        return f"Failed to read document: {str(e)}"
+        return f"Failed to Read Document: {str(e)}"
 
 
 @mcp.tool()
@@ -196,7 +198,7 @@ async def get_document_summary(title : str) -> str:
         reader = PostgresReader(config, is_async = True)
         await reader.connect()
         result = await reader.query(
-            table        = FD_TABLE,
+            FD_TABLE,
             columns      = ['summary'],
             where        = 'stem = %s',
             where_params = (title,),
@@ -229,11 +231,11 @@ async def set_document_summary(title : str, summary : str) -> str:
     await writer.connect()
     try:
         result = await writer.update(
-            table="file_records",
-            data={ "summary": summary},
-            where="stem = %s",
-            where_params=(title,),
-            returning=True
+            'file_records',
+            data         = { "summary": summary},
+            where        = "stem = %s",
+            where_params = (title,),
+            returning    = True
         )
         
         if not result:
