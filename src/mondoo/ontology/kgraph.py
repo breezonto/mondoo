@@ -281,7 +281,7 @@ class KGraph:
             writer.writeheader()
             writer.writerows(rows)
 
-        print(
+        logger.info(
             f"CSV written to: {filename}"
         )
 
@@ -571,24 +571,3 @@ class KGraph:
                 f"{graph.identifier}: "
                 f"{len(graph):,} triples"
             )
-
-
-def _get_sparql_helper_(file_name):
-    base_dir = './template/sparql'
-    return Path(os.path.join(base_dir, file_name)).read_text()
-
-
-if __name__ == '__main__':
-    data_files_dir = '/Users/breeze/miscs/doi-10.17026-dans-z64-mrvb'
-
-    class_stats   = _get_sparql_helper_('class_stats.query')
-    graph_stats   = _get_sparql_helper_('graph_stats.query')
-    inst_stats    = _get_sparql_helper_('instances_stats.query')
-    prop_stats    = _get_sparql_helper_('property_stats.query')
-    literal_stats = _get_sparql_helper_('literal_stats.query')
-
-    query = literal_stats
-
-    kg = KGraph()
-    kg.load(data_files_dir)
-    kg.sparql(query)
