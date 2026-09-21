@@ -24,7 +24,8 @@ dependencies = [
     "pyyaml",
     "httpx[socks]",
     "requests",
-    "Pillow"
+    "Pillow",
+    "pytest"
 ]
 
 [dependency-groups]
