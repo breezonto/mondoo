@@ -6,7 +6,6 @@ from rdflib     import Dataset, URIRef, BNode, Literal
 import csv
 import json
 import random
-import os
 import logging
 
 logger = logging.getLogger(__name__)
