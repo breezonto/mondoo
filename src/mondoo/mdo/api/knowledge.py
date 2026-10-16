@@ -1,6 +1,6 @@
 from ..io.dbc import get_current_async_dbc, get_current_sync_dbc
 
-import mondoo.mdo.engine.kbase as K
+import mondoo.mdo.engine.vbase as V
 import logging
 
 
@@ -25,7 +25,7 @@ def store_excerpts_to_kb(
         )
         chunks = rows[0].get('chunks')
 
-        K.store_indexed_excerpt(
+        V.store_indexed_excerpt(
             file_id    = file_id,
             file_title = file_name,
             file_type  = file_type,
@@ -58,7 +58,7 @@ async def store_excerpts_to_kb_async(
         )
         chunks = rows[0].get('chunks')
 
-        K.store_indexed_excerpt(
+        V.store_indexed_excerpt(
             file_id    = file_id,
             file_title = '.'.join([file_name, file_type]),
             file_type  = file_type,
@@ -74,7 +74,7 @@ async def store_excerpts_to_kb_async(
 
 
 def recall_k_excerpts(query : str, k : int):
-    result = K.get_top_k_excerpts(query, k)
+    result = V.get_top_k_excerpts(query, k)
     return result
 
 
@@ -83,4 +83,4 @@ def erase_excerpts_from_kb(
     *, 
     total_excerpts : int
 ):
-    K.remove_excerpts_from_kb(file_id, total_excerpts=total_excerpts)
+    V.remove_excerpts_from_kb(file_id, total_excerpts=total_excerpts)
