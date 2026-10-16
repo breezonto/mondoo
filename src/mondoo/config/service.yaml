@@ -1,6 +1,6 @@
 apps:
   chat:
-    script: mondoo/service/chat.py # uvicorn load file according to its module path
+    script: mondoo/api/chat.py # uvicorn load file according to its module path
     host: 127.0.0.1
     port: 10660
     proxy_url: 
@@ -12,7 +12,7 @@ apps:
       - 127.0.0.1
 
   vkbase:
-    script: mondoo/service/vbase.py
+    script: mondoo/api/kbase.py
     host: 127.0.0.1
     port: 10760
     proxy_url: 
@@ -23,7 +23,7 @@ apps:
       - 127.0.0.1
 
   ocr:
-    script: mondoo/service/ocr.py
+    script: mondoo/api/ocr.py
     host: 127.0.0.1
     port: 10960
     proxy_url: 
@@ -34,7 +34,7 @@ apps:
       - 127.0.0.1
 
   library:
-    script: mondoo/service/library.py
+    script: mondoo/api/library.py
     host: 127.0.0.1
     port: 10866
     proxy_url: 

@@ -1,12 +1,13 @@
-object_dir  : /home/cache
-source_dir  : /home/file
+object_dir      : /home/cache
+source_dir      : /home/file
+default_rdf_dir : /path/to/rdf/files
 
 sock_path_4_kaleido   : /tmp/mcp_kaleido.sock
 sock_path_4_librarian : /tmp/mcp_librarian.sock
 sock_path_4_gateway   : /tmp/mcp_gateway.sock
 
-default_local_llm_path       : ./llm/qwen3-30B-instruct
-default_embedding_model_path : /home/guard/model-weights/embedding/all-MiniLM-L6-v2
+default_local_llm_path       : /path/to/local/llm
+default_embedding_model_path : /path/to/embedding/model
 
 enable_local_llm  : False 
 enable_remote_llm : True
